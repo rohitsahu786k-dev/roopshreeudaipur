@@ -1,0 +1,20 @@
+export const currencies = [
+  { code: "INR", symbol: "Rs", country: "India", rate: 1 },
+  { code: "USD", symbol: "$", country: "United States", rate: 0.012 },
+  { code: "GBP", symbol: "GBP", country: "United Kingdom", rate: 0.0095 },
+  { code: "AED", symbol: "AED", country: "United Arab Emirates", rate: 0.044 },
+  { code: "CAD", symbol: "C$", country: "Canada", rate: 0.016 },
+  { code: "AUD", symbol: "A$", country: "Australia", rate: 0.018 },
+  { code: "EUR", symbol: "EUR", country: "European Union", rate: 0.011 },
+  { code: "SGD", symbol: "S$", country: "Singapore", rate: 0.016 },
+  { code: "MYR", symbol: "RM", country: "Malaysia", rate: 0.056 },
+  { code: "NZD", symbol: "NZ$", country: "New Zealand", rate: 0.02 },
+  { code: "SAR", symbol: "SAR", country: "Saudi Arabia", rate: 0.045 },
+  { code: "QAR", symbol: "QAR", country: "Qatar", rate: 0.044 },
+  { code: "KWD", symbol: "KWD", country: "Kuwait", rate: 0.0037 },
+  { code: "OMR", symbol: "OMR", country: "Oman", rate: 0.0046 },
+  { code: "BHD", symbol: "BHD", country: "Bahrain", rate: 0.0045 },
+  { code: "ZAR", symbol: "R", country: "South Africa", rate: 0.22 },
+  { code: "JPY", symbol: "JPY", country: "Japan", rate: 1.83 },
+  { code: "HKD", symbol: "HK$", country: "Hong Kong", rate: 0.094 }
+];
