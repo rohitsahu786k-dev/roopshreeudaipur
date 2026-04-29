@@ -1,10 +1,15 @@
 import Link from "next/link";
 import { CreditCard, Heart, MapPin, PackageCheck, ShieldCheck } from "lucide-react";
+import type { Metadata } from "next";
 import { AuthPanel } from "@/components/account/AuthPanel";
 import { getCurrentUser } from "@/lib/auth";
 
-export const metadata = {
-  title: "My Account"
+export const metadata: Metadata = {
+  title: "Login & Register | Roop Shree",
+  description: "Sign in to your Roop Shree account to track orders, manage addresses, and enjoy faster checkout.",
+  robots: {
+    index: false
+  }
 };
 
 const accountBenefits = [

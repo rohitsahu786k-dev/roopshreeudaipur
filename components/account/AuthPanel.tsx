@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Eye, LockKeyhole, Mail, Phone, UserRound } from "lucide-react";
+import { Eye, EyeOff, LockKeyhole, Mail, Phone, UserRound } from "lucide-react";
 import { useState } from "react";
 
 type Mode = "login" | "register";
@@ -23,6 +23,7 @@ export function AuthPanel() {
   const [mode, setMode] = useState<Mode>("login");
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleSubmit(formData: FormData) {
     setLoading(true);
@@ -104,12 +105,19 @@ export function AuthPanel() {
               <LockKeyhole className="absolute left-3 top-1/2 -translate-y-1/2 text-ink/35" size={18} />
               <input
                 name="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 autoComplete={mode === "login" ? "current-password" : "new-password"}
                 required
                 className="focus-ring w-full border border-black/15 px-10 py-3 pr-11 text-sm font-medium normal-case tracking-normal"
               />
-              <Eye className="absolute right-3 top-1/2 -translate-y-1/2 text-ink/35" size={18} />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-ink/35 hover:text-ink focus:outline-none"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </span>
           </label>
           {mode === "register" ? (

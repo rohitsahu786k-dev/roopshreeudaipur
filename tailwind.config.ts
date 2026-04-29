@@ -10,19 +10,19 @@ const config: Config = {
       },
       colors: {
         primary: {
-          DEFAULT: "#C2185B",
-          dark: "#880E4F"
+          DEFAULT: "#000000",
+          dark: "#000000"
         },
         secondary: {
-          DEFAULT: "#4A148C"
+          DEFAULT: "#000000"
         },
         accent: {
-          DEFAULT: "#FF6F00"
+          DEFAULT: "#000000"
         },
         neutral: {
-          DEFAULT: "#FFF8F0"
+          DEFAULT: "#FFFFFF"
         },
-        ink: "#231F20"
+        ink: "#000000"
       },
       boxShadow: {
         soft: "0 18px 50px rgba(35, 31, 32, 0.10)"

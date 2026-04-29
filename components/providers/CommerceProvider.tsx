@@ -10,6 +10,8 @@ type CartItem = (typeof initialCartItems)[number];
 
 type CommerceContextValue = {
   cartItems: CartItem[];
+  cartOpen: boolean;
+  setCartOpen: (open: boolean) => void;
   currencyCode: string;
   setCurrencyCode: (code: string) => void;
   couponCode: string;
@@ -32,6 +34,7 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
   const [currencyCode, setCurrencyCode] = useState("INR");
   const [couponCode, setCouponCode] = useState("");
   const [cartItems, setCartItems] = useState<CartItem[]>(initialCartItems);
+  const [cartOpen, setCartOpen] = useState(false);
   const subtotal = cartItems.reduce((sum, item) => sum + item.product.price * item.qty, 0);
   const { coupon, discount } = getCouponDiscount(couponCode, subtotal);
   const currency = currencies.find((item) => item.code === currencyCode) ?? currencies[0];
@@ -40,6 +43,8 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
   const value = useMemo<CommerceContextValue>(
     () => ({
       cartItems,
+      cartOpen,
+      setCartOpen,
       currencyCode,
       setCurrencyCode,
       couponCode,
@@ -117,7 +122,7 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
         setCouponCode("");
       }
     }),
-    [cartItems, coupon, couponCode, currency, currencyCode, discount, subtotal, total]
+    [cartItems, coupon, couponCode, currency, currencyCode, discount, subtotal, total, cartOpen]
   );
 
   return <CommerceContext.Provider value={value}>{children}</CommerceContext.Provider>;

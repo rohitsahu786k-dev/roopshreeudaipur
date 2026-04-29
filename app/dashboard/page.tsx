@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Heart, MapPin, PackageCheck, ShoppingBag } from "lucide-react";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
@@ -5,8 +6,12 @@ import { formatPrice, products } from "@/lib/catalog";
 import { recentOrders } from "@/lib/dashboard";
 import { requireRole } from "@/lib/auth";
 
-export const metadata = {
-  title: "User Dashboard"
+export const metadata: Metadata = {
+  title: "Dashboard | Roop Shree",
+  description: "Manage your Roop Shree account, view orders, and access your profile.",
+  robots: {
+    index: false
+  }
 };
 
 export default async function UserDashboardPage() {

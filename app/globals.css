@@ -4,8 +4,8 @@
 
 :root {
   color-scheme: light;
-  --background: #fffaf5;
-  --foreground: #231f20;
+  --background: #ffffff;
+  --foreground: #000000;
 }
 
 * {
@@ -16,6 +16,7 @@ body {
   margin: 0;
   background: var(--background);
   color: var(--foreground);
+  overflow-x: hidden;
 }
 
 a {
@@ -32,4 +33,11 @@ textarea {
 
 .focus-ring {
   @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow-x: hidden;
 }

@@ -1,7 +1,13 @@
+import type { Metadata } from "next";
 import { ContactForm } from "@/components/contact/ContactForm";
 
-export const metadata = {
-  title: "Contact Us"
+export const metadata: Metadata = {
+  title: "Contact Us | Roop Shree",
+  description: "Get in touch with our customer support team. We're here to help with any questions about our products and services.",
+  openGraph: {
+    title: "Contact Us | Roop Shree",
+    description: "Reach out to our support team"
+  }
 };
 
 export default function ContactPage() {

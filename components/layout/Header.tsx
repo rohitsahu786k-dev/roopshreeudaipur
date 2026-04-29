@@ -20,9 +20,8 @@ const nav = [
 
 export function Header() {
   const [open, setOpen] = useState(false);
-  const [cartOpen, setCartOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const { cartItems, currencyCode, setCurrencyCode } = useCommerce();
+  const { cartItems, cartOpen, setCartOpen, currencyCode, setCurrencyCode } = useCommerce();
 
   return (
     <header className="sticky top-0 z-40 border-b border-black/10 bg-white/95 backdrop-blur">

@@ -30,7 +30,7 @@ export function ProductCard({ product }: { product: Product }) {
           />
         </div>
       </Link>
-      <div className="space-y-2 pt-3">
+      <div className="space-y-2 px-4 pt-3 pb-4">
         <div className="flex items-center gap-1 text-sm text-accent">
           <Star size={16} fill="currentColor" />
           <span className="font-semibold">{product.rating}</span>

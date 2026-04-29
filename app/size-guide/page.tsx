@@ -7,8 +7,11 @@ const rows = [
   ["XXL", "42", "36", "44"]
 ];
 
-export const metadata = {
-  title: "Size Guide"
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Size Guide | Roop Shree",
+  description: "Find your perfect fit with our comprehensive size guide for ethnic wear. Bust, waist, and hip measurements for all sizes."
 };
 
 export default function SizeGuidePage() {

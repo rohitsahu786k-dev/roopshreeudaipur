@@ -35,7 +35,7 @@ export function SideCart({ open, onClose }: SideCartProps) {
         onClick={onClose}
       />
       <aside
-        className={`absolute right-0 top-0 flex h-screen min-h-dvh w-full max-w-md flex-col overflow-hidden bg-white shadow-2xl transition-transform duration-300 ${
+        className={`fixed right-0 top-0 flex h-screen w-full max-w-md flex-col overflow-hidden bg-white shadow-2xl transition-transform duration-300 ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
         aria-label="Shopping cart"

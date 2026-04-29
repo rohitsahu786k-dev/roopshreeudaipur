@@ -5,8 +5,11 @@ const fabrics = [
   ["Chinnon", "Soft sheen and movement for shararas and festive silhouettes."]
 ];
 
-export const metadata = {
-  title: "Fabric Guide"
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Fabric Guide | Roop Shree",
+  description: "Learn about different fabrics used in ethnic wear, their characteristics, and care instructions."
 };
 
 export default function FabricGuidePage() {

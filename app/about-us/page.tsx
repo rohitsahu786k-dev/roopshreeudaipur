@@ -1,5 +1,12 @@
-export const metadata = {
-  title: "About Us"
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "About Us | Roop Shree",
+  description: "Discover the story behind Roop Shree. We're committed to bringing authentic designer ethnic wear to customers worldwide.",
+  openGraph: {
+    title: "About Us | Roop Shree",
+    description: "Learn about Roop Shree's mission and values"
+  }
 };
 
 export default function AboutPage() {

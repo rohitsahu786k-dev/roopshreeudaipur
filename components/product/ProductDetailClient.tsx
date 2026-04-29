@@ -5,6 +5,7 @@ import Link from "next/link";
 import { BadgeCheck, Heart, LocateFixed, PackageCheck, RotateCcw, ShieldCheck, ShoppingBag, Star, Truck, Zap } from "lucide-react";
 import { useMemo, useState } from "react";
 import { ProductCard } from "@/components/ProductCard";
+import { SizeGuidePopup } from "@/components/product/SizeGuidePopup";
 import { useCommerce } from "@/components/providers/CommerceProvider";
 import type { Product } from "@/lib/catalog";
 import { coupons } from "@/lib/coupons";
@@ -28,7 +29,8 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
   const [pincode, setPincode] = useState("");
   const [deliveryMessage, setDeliveryMessage] = useState("");
   const [locationStatus, setLocationStatus] = useState("");
-  const { addToCart, formatMoney, applyCoupon, appliedCoupon } = useCommerce();
+  const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
+  const { addToCart, formatMoney, applyCoupon, appliedCoupon, setCartOpen } = useCommerce();
 
   const upsells = useMemo(() => related.slice(0, 4), [related]);
 
@@ -97,7 +99,7 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
               <div>
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-bold uppercase tracking-wide">Select Size</p>
-                  <Link href="/size-guide" className="text-xs font-bold text-primary">Size Guide</Link>
+                  <button type="button" onClick={() => setSizeGuideOpen(true)} className="text-xs font-bold text-primary hover:underline">Size Guide</button>
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {product.sizes.map((size) => (
@@ -135,7 +137,10 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
               <button
                 type="button"
                 className="focus-ring inline-flex items-center justify-center gap-2 border border-ink px-5 py-3 font-bold uppercase tracking-wide hover:bg-neutral"
-                onClick={() => addToCart(product, { size: selectedSize, color: selectedColor })}
+                onClick={() => {
+                  addToCart(product, { size: selectedSize, color: selectedColor });
+                  setCartOpen(true);
+                }}
               >
                 <ShoppingBag size={18} /> Add To Bag
               </button>
@@ -235,6 +240,8 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
           <PackageCheck className="text-primary" size={20} /> Authentic designer products. Quality checked before dispatch.
         </div>
       </div>
+
+      <SizeGuidePopup open={sizeGuideOpen} onClose={() => setSizeGuideOpen(false)} />
     </section>
   );
 }
