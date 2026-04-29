@@ -2,9 +2,10 @@ export type Coupon = {
   code: string;
   title: string;
   description: string;
-  discountType: "percent" | "fixed";
+  discountType: "percent" | "fixed" | "free_shipping";
   value: number;
   minSpend: number;
+  badge: string;
 };
 
 export const coupons: Coupon[] = [
@@ -14,7 +15,8 @@ export const coupons: Coupon[] = [
     description: "Get 10% off on orders above Rs 5,000.",
     discountType: "percent",
     value: 10,
-    minSpend: 5000
+    minSpend: 5000,
+    badge: "Best for festive orders"
   },
   {
     code: "BRIDAL1500",
@@ -22,15 +24,26 @@ export const coupons: Coupon[] = [
     description: "Flat Rs 1,500 off on premium occasion orders above Rs 20,000.",
     discountType: "fixed",
     value: 1500,
-    minSpend: 20000
+    minSpend: 20000,
+    badge: "Bridal cart offer"
   },
   {
     code: "SHIPFREE",
     title: "Free shipping",
     description: "Extra Rs 499 benefit on orders above Rs 2,999.",
-    discountType: "fixed",
+    discountType: "free_shipping",
     value: 499,
-    minSpend: 2999
+    minSpend: 2999,
+    badge: "Shipping saver"
+  },
+  {
+    code: "UDAIPUR500",
+    title: "Rs 500 boutique welcome",
+    description: "For new Roop Shree customers on orders above Rs 8,000.",
+    discountType: "fixed",
+    value: 500,
+    minSpend: 8000,
+    badge: "New customer"
   }
 ];
 

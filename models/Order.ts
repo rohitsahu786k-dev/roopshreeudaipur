@@ -36,6 +36,8 @@ const orderSchema = new mongoose.Schema(
     subtotal: { type: Number, required: true },
     shipping: { type: Number, default: 0 },
     tax: { type: Number, default: 0 },
+    discount: { type: Number, default: 0 },
+    couponCode: String,
     total: { type: Number, required: true },
     currency: { type: String, default: "INR" },
     exchangeRate: { type: Number, default: 1 },
@@ -72,6 +74,9 @@ const orderSchema = new mongoose.Schema(
     shiprocketTrackingUrl: String,
     shiprocketLabelUrl: String,
     shiprocketInvoiceUrl: String,
+    invoiceNumber: String,
+    invoiceUrl: String,
+    invoiceGeneratedAt: Date,
     gokwikOrderId: String,
     isGokwikOrder: { type: Boolean, default: false },
     notes: String

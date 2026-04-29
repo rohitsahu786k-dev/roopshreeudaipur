@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ChevronRight } from "lucide-react";
+import { roopShreeBusiness } from "@/lib/business";
 import { formatPrice, products } from "@/lib/catalog";
 
 const navItems = [
@@ -11,8 +12,8 @@ const navItems = [
   "Kurta Sets",
   "Anarkalis",
   "Shararas",
-  "Western",
-  "Pret",
+  "Gowns",
+  "Rajputi Poshak",
   "Fusion",
   "Wedding",
   "Ready To Ship",
@@ -26,8 +27,8 @@ const imageFor = (id: string, width = 900) =>
 
 const topTiles = [
   { title: "Bridal Lehengas", image: imageFor("photo-1610030469983-98e550d6193c") },
-  { title: "Cocktail Sarees", image: imageFor("photo-1583391733956-6c78276477e2") },
-  { title: "Festive Reds", image: imageFor("photo-1612336307429-8a898d10e223") }
+  { title: "Hand Work Sarees", image: imageFor("photo-1583391733956-6c78276477e2") },
+  { title: "Rajasthani Wedding Wear", image: imageFor("photo-1612336307429-8a898d10e223") }
 ];
 
 const shopCategories = [
@@ -36,29 +37,29 @@ const shopCategories = [
   { title: "Sarees", image: imageFor("photo-1583391733956-6c78276477e2") },
   { title: "Sharara Sets", image: imageFor("photo-1597983073493-88cd35cf93b0") },
   { title: "Anarkalis", image: imageFor("photo-1603252109303-2751441dd157") },
-  { title: "Dupattas", image: imageFor("photo-1612336307429-8a898d10e223") }
+  { title: "Rajputi Poshak", image: imageFor("photo-1612336307429-8a898d10e223") }
 ];
 
 const collectionGrid = [
-  { title: "Summer Wedding", image: imageFor("photo-1610030469983-98e550d6193c") },
+  { title: "Udaipur Wedding", image: imageFor("photo-1610030469983-98e550d6193c") },
   { title: "Sangeet Edit", image: imageFor("photo-1583391733956-6c78276477e2") },
-  { title: "Destination Ready", image: imageFor("photo-1597983073493-88cd35cf93b0") },
+  { title: "Destination Wedding", image: imageFor("photo-1597983073493-88cd35cf93b0") },
   { title: "Haldi Hues", image: imageFor("photo-1609357605129-26f69add5d6e") },
   { title: "Reception Glam", image: imageFor("photo-1610189017773-29214c0f9e40") },
   { title: "Mehendi Mood", image: imageFor("photo-1612336307429-8a898d10e223") }
 ];
 
 const designerCards = [
-  { title: "Aashni Edit", subtitle: "Embroidered lehengas", image: imageFor("photo-1610030469983-98e550d6193c") },
-  { title: "Meera Formals", subtitle: "Modern occasion wear", image: imageFor("photo-1583391733956-6c78276477e2") },
-  { title: "Zari Studio", subtitle: "Gold festive classics", image: imageFor("photo-1609357605129-26f69add5d6e") },
-  { title: "Roop Shree Select", subtitle: "Ready to ship", image: imageFor("photo-1597983073493-88cd35cf93b0") }
+  { title: "Bridal Hand Work", subtitle: "Zari, gota patti and thread work", image: imageFor("photo-1610030469983-98e550d6193c") },
+  { title: "Mewar Festive", subtitle: "Sarees and suits for rituals", image: imageFor("photo-1583391733956-6c78276477e2") },
+  { title: "Gown Studio", subtitle: "Reception and cocktail styles", image: imageFor("photo-1609357605129-26f69add5d6e") },
+  { title: "Ready To Ship", subtitle: "Fast dispatch ethnic wear", image: imageFor("photo-1597983073493-88cd35cf93b0") }
 ];
 
 const storeImages = [
-  { title: "Udaipur Flagship", image: imageFor("photo-1555529669-e69e7aa0ba9a") },
-  { title: "Designer Studio", image: imageFor("photo-1512436991641-6745cdb1723f") },
-  { title: "Bridal Lounge", image: imageFor("photo-1521334884684-d80222895322") },
+  { title: "Udaipur Boutique", image: imageFor("photo-1555529669-e69e7aa0ba9a") },
+  { title: "Hand Work Studio", image: imageFor("photo-1512436991641-6745cdb1723f") },
+  { title: "Bridal Trial Lounge", image: imageFor("photo-1521334884684-d80222895322") },
   { title: "Private Styling", image: imageFor("photo-1496747611176-843222e1e57c") }
 ];
 
@@ -113,8 +114,8 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-gradient-to-r from-white/85 via-white/35 to-transparent" />
           <div className="absolute left-[7%] top-1/2 max-w-sm -translate-y-1/2">
             <p className="text-xs font-bold uppercase tracking-[0.24em]">Ready to Ship</p>
-            <h1 className="mt-3 text-4xl font-semibold uppercase tracking-wide md:text-5xl">Roop Shree</h1>
-            <p className="mt-3 text-sm font-medium leading-6">Luxury Indian occasion wear, styled for weddings, festive edits, and statement celebrations.</p>
+            <h1 className="mt-3 text-4xl font-semibold uppercase tracking-wide md:text-5xl">{roopShreeBusiness.name}</h1>
+            <p className="mt-3 text-sm font-medium leading-6">Bridal lehengas, sarees, suits, gowns and hand work ethnic wear crafted for Udaipur weddings and festive celebrations.</p>
             <Link href="/shop" className="mt-5 inline-flex bg-ink px-6 py-2 text-[11px] font-bold uppercase tracking-wide text-white">
               Shop Now
             </Link>
@@ -220,10 +221,10 @@ export default function HomePage() {
         </section>
 
         <section className="mt-8">
-          <SectionTitle title="Menswear And More" />
+          <SectionTitle title="Udaipur Wedding Edits" />
           <div className="grid gap-3 md:grid-cols-2">
-            <ImageTile title="Resort Wear" image={imageFor("photo-1529139574466-a303027c1d8b", 1200)} tall />
-            <ImageTile title="Statement Jackets" image={imageFor("photo-1515886657613-9f3515b0c78f", 1200)} tall />
+            <ImageTile title="Rajputi Poshak" image={imageFor("photo-1529139574466-a303027c1d8b", 1200)} tall />
+            <ImageTile title="Indo Western Gowns" image={imageFor("photo-1515886657613-9f3515b0c78f", 1200)} tall />
           </div>
         </section>
 
@@ -256,7 +257,7 @@ export default function HomePage() {
             {[
               "Book a private styling appointment",
               "Find ready to ship wedding looks",
-              "Explore designer festive edits",
+              "Explore Roop Shree festive edits",
               "Get size and custom fit support"
             ].map((item) => (
               <Link key={item} href="/contact-us" className="bg-white p-8 text-center text-[12px] font-bold uppercase tracking-wide hover:bg-neutral">

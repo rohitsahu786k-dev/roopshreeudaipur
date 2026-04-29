@@ -8,6 +8,12 @@ type SEO = {
   description: string;
   keywords: string[];
   ogImage?: string;
+  canonicalUrl?: string;
+  schemaType?: string;
+  schemaJson?: string;
+  focusKeyword?: string;
+  metaRobots?: string;
+  altTextTemplate?: string;
 };
 
 type Props = {
@@ -120,6 +126,72 @@ export default function SEOPanel({ seo, productName, slug, onChange }: Props) {
               onChange={(e) => set("ogImage", e.target.value)}
               placeholder="https://... (defaults to first product image)"
               className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+            />
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-gray-700">Focus Keyword</label>
+              <input
+                value={seo.focusKeyword ?? ""}
+                onChange={(e) => set("focusKeyword", e.target.value)}
+                placeholder="bridal lehenga Udaipur"
+                className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-gray-700">Robots</label>
+              <select
+                value={seo.metaRobots ?? "index,follow"}
+                onChange={(e) => set("metaRobots", e.target.value)}
+                className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+              >
+                <option value="index,follow">Index, follow</option>
+                <option value="noindex,follow">No index, follow</option>
+                <option value="noindex,nofollow">No index, no follow</option>
+              </select>
+            </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-gray-700">Canonical URL</label>
+              <input
+                value={seo.canonicalUrl ?? ""}
+                onChange={(e) => set("canonicalUrl", e.target.value)}
+                placeholder="Optional canonical URL"
+                className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-gray-700">Schema Type</label>
+              <select
+                value={seo.schemaType ?? "Product"}
+                onChange={(e) => set("schemaType", e.target.value)}
+                className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+              >
+                <option value="Product">Product</option>
+                <option value="Offer">Offer</option>
+                <option value="AggregateOffer">AggregateOffer</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700">Image Alt Text Template</label>
+            <input
+              value={seo.altTextTemplate ?? ""}
+              onChange={(e) => set("altTextTemplate", e.target.value)}
+              placeholder="{product} by Roop Shree Udaipur"
+              className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700">Custom Product Schema JSON</label>
+            <textarea
+              value={seo.schemaJson ?? ""}
+              onChange={(e) => set("schemaJson", e.target.value)}
+              rows={5}
+              placeholder='{"@type":"Product","brand":{"@type":"Brand","name":"Roop Shree Udaipur"}}'
+              className="w-full rounded-lg border border-gray-200 px-3 py-2.5 font-mono text-xs focus:border-primary focus:outline-none"
             />
           </div>
         </div>

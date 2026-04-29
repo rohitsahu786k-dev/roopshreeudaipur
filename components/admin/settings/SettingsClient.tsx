@@ -1,205 +1,276 @@
 "use client";
 
-import { useState } from "react";
-import { Store, CreditCard, Truck, Bell, Users, Check } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Bell, Check, Plus, Save, Store, Trash2, Truck } from "lucide-react";
 
-const TABS = [
+type ShippingZone = {
+  countryCode: string;
+  countryName: string;
+  currency: string;
+  baseRate: number;
+  freeShippingThreshold: number;
+  estimatedDelivery: string;
+  isActive: boolean;
+};
+
+type StoreSettings = {
+  storeName: string;
+  tagline: string;
+  email: string;
+  phone: string;
+  whatsapp: string;
+  instagramUrl: string;
+  announcement: string;
+  address: {
+    line1: string;
+    line2?: string;
+    city: string;
+    state: string;
+    country: string;
+    pincode?: string;
+  };
+  defaultSeo: {
+    title: string;
+    description: string;
+    keywords: string[];
+    schemaType: string;
+    ogImage?: string;
+  };
+  cart: {
+    freeShippingThreshold: number;
+    suggestedCoupons: string[];
+    giftWrapThreshold: number;
+  };
+  shippingZones: ShippingZone[];
+};
+
+const emptySettings: StoreSettings = {
+  storeName: "Roop Shree Udaipur",
+  tagline: "Bridal lehengas, sarees, suits and handcrafted occasion wear from Udaipur.",
+  email: "info@roopshreeudaipur.com",
+  phone: "+91 98765 43210",
+  whatsapp: "+91 98765 43210",
+  instagramUrl: "https://www.instagram.com/roopshreeudaipur/",
+  announcement: "Free shipping in India on eligible orders. New bridal edits now available.",
+  address: {
+    line1: "Udaipur, Rajasthan",
+    city: "Udaipur",
+    state: "Rajasthan",
+    country: "India"
+  },
+  defaultSeo: {
+    title: "Roop Shree Udaipur | Bridal Lehengas, Sarees & Ethnic Wear",
+    description: "Shop bridal lehengas, sarees, suits, gowns and hand work ethnic wear from Roop Shree Udaipur.",
+    keywords: ["Roop Shree Udaipur", "bridal lehenga Udaipur", "ethnic wear Udaipur"],
+    schemaType: "ClothingStore"
+  },
+  cart: {
+    freeShippingThreshold: 2999,
+    suggestedCoupons: ["ROOP10", "SHIPFREE", "BRIDAL1500"],
+    giftWrapThreshold: 12000
+  },
+  shippingZones: []
+};
+
+const tabs = [
   { id: "store", label: "Store", icon: Store },
-  { id: "payments", label: "Payments", icon: CreditCard },
   { id: "shipping", label: "Shipping", icon: Truck },
-  { id: "notifications", label: "Notifications", icon: Bell },
-  { id: "staff", label: "Staff & Roles", icon: Users }
+  { id: "notifications", label: "Notifications", icon: Bell }
 ];
 
 export default function SettingsClient() {
   const [activeTab, setActiveTab] = useState("store");
+  const [settings, setSettings] = useState<StoreSettings>(emptySettings);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const showSaved = () => {
+  useEffect(() => {
+    async function load() {
+      const res = await fetch("/api/admin/store-settings");
+      const data = await res.json();
+      setSettings({ ...emptySettings, ...(data.settings ?? {}) });
+      setLoading(false);
+    }
+    load();
+  }, []);
+
+  function update(path: string, value: unknown) {
+    setSettings((current) => {
+      const next: StoreSettings = structuredClone(current);
+      const keys = path.split(".");
+      let target: any = next;
+      keys.slice(0, -1).forEach((key) => {
+        target = target[key];
+      });
+      target[keys[keys.length - 1]] = value;
+      return next;
+    });
+  }
+
+  async function save() {
+    setSaving(true);
+    await fetch("/api/admin/store-settings", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(settings)
+    });
+    setSaving(false);
     setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
-  };
+    setTimeout(() => setSaved(false), 1800);
+  }
+
+  function addZone() {
+    update("shippingZones", [
+      ...settings.shippingZones,
+      {
+        countryCode: "GB",
+        countryName: "United Kingdom",
+        currency: "GBP",
+        baseRate: 2499,
+        freeShippingThreshold: 35000,
+        estimatedDelivery: "8-14 business days",
+        isActive: true
+      }
+    ]);
+  }
+
+  function updateZone(index: number, key: keyof ShippingZone, value: string | number | boolean) {
+    update(
+      "shippingZones",
+      settings.shippingZones.map((zone, zoneIndex) => (zoneIndex === index ? { ...zone, [key]: value } : zone))
+    );
+  }
+
+  if (loading) {
+    return <div className="p-6 text-sm text-gray-500">Loading settings...</div>;
+  }
 
   return (
     <div className="p-4 lg:p-6">
-      <div className="mb-6">
-        <h1 className="text-xl font-bold text-gray-900">Settings</h1>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-gray-900">Store Settings</h1>
+          <p className="mt-0.5 text-sm text-gray-500">Manage business details, SEO defaults, cart nudges and country-wise shipping.</p>
+        </div>
+        <button onClick={save} disabled={saving} className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white disabled:opacity-50">
+          {saved ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
+          {saved ? "Saved" : saving ? "Saving..." : "Save"}
+        </button>
       </div>
 
       <div className="flex gap-6">
-        {/* Sidebar */}
-        <div className="w-48 shrink-0">
-          <nav className="space-y-0.5">
-            {TABS.map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm transition-colors ${
-                    activeTab === tab.id
-                      ? "bg-primary text-white"
-                      : "text-gray-600 hover:bg-gray-100"
-                  }`}
-                >
-                  <Icon className="h-4 w-4" />
-                  {tab.label}
-                </button>
-              );
-            })}
-          </nav>
-        </div>
+        <nav className="w-48 shrink-0 space-y-0.5">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm ${activeTab === tab.id ? "bg-primary text-white" : "text-gray-600 hover:bg-gray-100"}`}>
+                <Icon className="h-4 w-4" />
+                {tab.label}
+              </button>
+            );
+          })}
+        </nav>
 
-        {/* Content */}
-        <div className="flex-1">
-          {activeTab === "store" && (
-            <div className="rounded-xl border border-gray-200 bg-white p-6">
-              <h2 className="mb-4 text-base font-semibold text-gray-900">Store Information</h2>
-              <div className="space-y-4">
-                {[
-                  { label: "Store Name", placeholder: "Roop Shree Udaipur", env: "STORE_NAME" },
-                  { label: "Store Email", placeholder: "info@roopshreeudaipur.com", env: "STORE_EMAIL" },
-                  { label: "Store Phone", placeholder: "+91 98765 43210", env: "STORE_PHONE" },
-                  { label: "Store Address", placeholder: "123, Main Street, Udaipur, Rajasthan", env: "STORE_ADDRESS" },
-                  { label: "Currency", placeholder: "INR", env: "DEFAULT_CURRENCY" }
-                ].map(({ label, placeholder, env }) => (
-                  <div key={env}>
-                    <label className="mb-1.5 block text-sm font-medium text-gray-700">{label}</label>
-                    <input
-                      placeholder={placeholder}
-                      className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
-                    />
-                    <p className="mt-1 text-xs text-gray-400">Set via environment variable: {env}</p>
-                  </div>
-                ))}
-                <div className="pt-2">
-                  <button
-                    onClick={showSaved}
-                    className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark"
-                  >
-                    {saved ? <Check className="h-4 w-4" /> : null}
-                    {saved ? "Saved!" : "Save Settings"}
-                  </button>
-                  <p className="mt-2 text-xs text-gray-400">
-                    Store settings are managed via environment variables. Update your .env file and restart the server.
-                  </p>
+        <div className="min-w-0 flex-1">
+          {activeTab === "store" ? (
+            <div className="grid gap-4 rounded-xl border border-gray-200 bg-white p-6 md:grid-cols-2">
+              {[
+                ["storeName", "Store Name"],
+                ["tagline", "Tagline"],
+                ["email", "Email"],
+                ["phone", "Phone"],
+                ["whatsapp", "WhatsApp"],
+                ["instagramUrl", "Instagram URL"],
+                ["announcement", "Announcement Bar"],
+                ["address.line1", "Address"],
+                ["address.city", "City"],
+                ["address.state", "State"],
+                ["address.country", "Country"],
+                ["address.pincode", "Pincode"]
+              ].map(([path, label]) => (
+                <label key={path} className={path === "tagline" || path === "announcement" || path === "address.line1" ? "md:col-span-2" : ""}>
+                  <span className="mb-1.5 block text-sm font-medium text-gray-700">{label}</span>
+                  <input value={String(path.split(".").reduce((acc: any, key) => acc?.[key], settings) ?? "")} onChange={(e) => update(path, e.target.value)} className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-primary focus:outline-none" />
+                </label>
+              ))}
+
+              <div className="border-t border-gray-100 pt-4 md:col-span-2">
+                <h2 className="mb-3 text-sm font-semibold text-gray-900">Default SEO</h2>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <input value={settings.defaultSeo.title} onChange={(e) => update("defaultSeo.title", e.target.value)} placeholder="SEO title" className="rounded-lg border border-gray-200 px-3 py-2.5 text-sm" />
+                  <input value={settings.defaultSeo.schemaType} onChange={(e) => update("defaultSeo.schemaType", e.target.value)} placeholder="Schema type" className="rounded-lg border border-gray-200 px-3 py-2.5 text-sm" />
+                  <textarea value={settings.defaultSeo.description} onChange={(e) => update("defaultSeo.description", e.target.value)} placeholder="Meta description" rows={3} className="rounded-lg border border-gray-200 px-3 py-2.5 text-sm md:col-span-2" />
+                  <input value={settings.defaultSeo.keywords.join(", ")} onChange={(e) => update("defaultSeo.keywords", e.target.value.split(",").map((item) => item.trim()).filter(Boolean))} placeholder="SEO keywords" className="rounded-lg border border-gray-200 px-3 py-2.5 text-sm md:col-span-2" />
                 </div>
               </div>
             </div>
-          )}
+          ) : null}
 
-          {activeTab === "payments" && (
-            <div className="rounded-xl border border-gray-200 bg-white p-6">
-              <h2 className="mb-4 text-base font-semibold text-gray-900">Payment Gateways</h2>
-              <div className="space-y-4">
-                {[
-                  { name: "Razorpay", keys: ["RAZORPAY_KEY_ID", "RAZORPAY_KEY_SECRET"], desc: "Cards, UPI, Wallets, NetBanking" },
-                  { name: "PayPal", keys: ["PAYPAL_CLIENT_ID", "PAYPAL_CLIENT_SECRET"], desc: "International payments" },
-                  { name: "GoKwik", keys: ["GOKWIK_APP_ID", "GOKWIK_APP_SECRET"], desc: "COD + BNPL solutions" }
-                ].map(({ name, keys, desc }) => (
-                  <div key={name} className="rounded-lg border border-gray-100 p-4">
-                    <div className="mb-2 flex items-center justify-between">
-                      <span className="font-medium text-gray-900">{name}</span>
-                      <span className="text-xs text-gray-500">{desc}</span>
-                    </div>
-                    {keys.map((key) => (
-                      <div key={key} className="mt-2">
-                        <label className="mb-1 block text-xs text-gray-500">{key}</label>
-                        <input
-                          type="password"
-                          placeholder="Configured via .env"
-                          disabled
-                          className="w-full rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 text-sm text-gray-400"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                ))}
-                <p className="text-xs text-gray-400">Configure payment keys in your .env file</p>
+          {activeTab === "shipping" ? (
+            <div className="space-y-4">
+              <div className="grid gap-4 rounded-xl border border-gray-200 bg-white p-6 md:grid-cols-3">
+                <label>
+                  <span className="mb-1.5 block text-sm font-medium text-gray-700">Free Shipping Threshold</span>
+                  <input type="number" value={settings.cart.freeShippingThreshold} onChange={(e) => update("cart.freeShippingThreshold", Number(e.target.value))} className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm" />
+                </label>
+                <label>
+                  <span className="mb-1.5 block text-sm font-medium text-gray-700">Gift Wrap Threshold</span>
+                  <input type="number" value={settings.cart.giftWrapThreshold} onChange={(e) => update("cart.giftWrapThreshold", Number(e.target.value))} className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm" />
+                </label>
+                <label>
+                  <span className="mb-1.5 block text-sm font-medium text-gray-700">Suggested Coupons</span>
+                  <input value={settings.cart.suggestedCoupons.join(", ")} onChange={(e) => update("cart.suggestedCoupons", e.target.value.split(",").map((item) => item.trim().toUpperCase()).filter(Boolean))} className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm" />
+                </label>
               </div>
-            </div>
-          )}
 
-          {activeTab === "shipping" && (
-            <div className="rounded-xl border border-gray-200 bg-white p-6">
-              <h2 className="mb-4 text-base font-semibold text-gray-900">Shipping Configuration</h2>
-              <div className="space-y-4">
-                <div className="rounded-lg border border-gray-100 p-4">
-                  <h3 className="font-medium text-gray-900 mb-3">Shiprocket</h3>
-                  {["SHIPROCKET_EMAIL", "SHIPROCKET_PASSWORD"].map((key) => (
-                    <div key={key} className="mt-2">
-                      <label className="mb-1 block text-xs text-gray-500">{key}</label>
-                      <input
-                        type="password"
-                        placeholder="Configured via .env"
-                        disabled
-                        className="w-full rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 text-sm text-gray-400"
-                      />
+              <div className="rounded-xl border border-gray-200 bg-white p-6">
+                <div className="mb-4 flex items-center justify-between">
+                  <h2 className="text-sm font-semibold text-gray-900">Country-wise Shipping Zones</h2>
+                  <button onClick={addZone} className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm hover:bg-gray-50">
+                    <Plus className="h-4 w-4" />
+                    Add Zone
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  {settings.shippingZones.map((zone, index) => (
+                    <div key={`${zone.countryCode}-${index}`} className="grid gap-3 rounded-lg border border-gray-100 p-4 md:grid-cols-6">
+                      <input value={zone.countryCode} onChange={(e) => updateZone(index, "countryCode", e.target.value.toUpperCase())} className="rounded-lg border border-gray-200 px-3 py-2 text-sm" />
+                      <input value={zone.countryName} onChange={(e) => updateZone(index, "countryName", e.target.value)} className="rounded-lg border border-gray-200 px-3 py-2 text-sm md:col-span-2" />
+                      <input type="number" value={zone.baseRate} onChange={(e) => updateZone(index, "baseRate", Number(e.target.value))} className="rounded-lg border border-gray-200 px-3 py-2 text-sm" />
+                      <input type="number" value={zone.freeShippingThreshold} onChange={(e) => updateZone(index, "freeShippingThreshold", Number(e.target.value))} className="rounded-lg border border-gray-200 px-3 py-2 text-sm" />
+                      <button onClick={() => update("shippingZones", settings.shippingZones.filter((_, zoneIndex) => zoneIndex !== index))} className="grid place-items-center rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-500">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                      <input value={zone.estimatedDelivery} onChange={(e) => updateZone(index, "estimatedDelivery", e.target.value)} className="rounded-lg border border-gray-200 px-3 py-2 text-sm md:col-span-6" />
                     </div>
                   ))}
                 </div>
-                <div className="rounded-lg border border-gray-100 p-4">
-                  <h3 className="font-medium text-gray-900 mb-2">Free Shipping Threshold</h3>
-                  <div className="flex gap-2 items-center">
-                    <span className="text-gray-500 text-sm">₹</span>
-                    <input
-                      type="number"
-                      placeholder="999"
-                      className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-primary focus:outline-none"
-                    />
-                  </div>
-                </div>
               </div>
             </div>
-          )}
+          ) : null}
 
-          {activeTab === "notifications" && (
+          {activeTab === "notifications" ? (
             <div className="rounded-xl border border-gray-200 bg-white p-6">
               <h2 className="mb-4 text-base font-semibold text-gray-900">Email Notifications</h2>
-              <div className="space-y-3">
+              <div className="grid gap-3">
                 {[
-                  { label: "New order placed", desc: "Notify admin when order is created" },
-                  { label: "Order shipped", desc: "Send tracking info to customer" },
-                  { label: "Low stock alert", desc: "Alert when product stock is low" },
-                  { label: "New customer registration", desc: "Welcome email to new customers" },
-                  { label: "Abandoned cart", desc: "Reminder for incomplete checkouts" }
-                ].map(({ label, desc }) => (
-                  <label key={label} className="flex items-start gap-3 cursor-pointer rounded-lg border border-gray-100 p-3 hover:bg-gray-50">
-                    <input type="checkbox" defaultChecked className="mt-0.5 rounded border-gray-300 text-primary" />
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">{label}</div>
-                      <div className="text-xs text-gray-500">{desc}</div>
-                    </div>
+                  "Welcome email",
+                  "Order confirmation with invoice link",
+                  "Shipment tracking email",
+                  "Contact auto-reply",
+                  "Abandoned cart reminder",
+                  "Low-stock admin alert"
+                ].map((label) => (
+                  <label key={label} className="flex items-center gap-3 rounded-lg border border-gray-100 p-3">
+                    <input type="checkbox" defaultChecked className="rounded border-gray-300 text-primary" />
+                    <span className="text-sm font-medium text-gray-800">{label}</span>
                   </label>
                 ))}
-                <p className="text-xs text-gray-400">Configure SMTP via SMTP_HOST, SMTP_USER, SMTP_PASS environment variables</p>
               </div>
+              <p className="mt-4 text-xs text-gray-500">SMTP keys still stay in environment variables; customer-facing content is editable from settings and content sections.</p>
             </div>
-          )}
-
-          {activeTab === "staff" && (
-            <div className="rounded-xl border border-gray-200 bg-white p-6">
-              <h2 className="mb-4 text-base font-semibold text-gray-900">Staff & Roles</h2>
-              <div className="space-y-4">
-                {[
-                  { role: "Admin", desc: "Full access to all features", color: "bg-red-100 text-red-700" },
-                  { role: "Manager", desc: "Can manage orders, inventory and shipping", color: "bg-blue-100 text-blue-700" },
-                  { role: "User", desc: "Regular customer account", color: "bg-gray-100 text-gray-700" }
-                ].map(({ role, desc, color }) => (
-                  <div key={role} className="flex items-center gap-4 rounded-lg border border-gray-100 p-4">
-                    <span className={`rounded-full px-3 py-1 text-xs font-medium ${color}`}>{role}</span>
-                    <p className="text-sm text-gray-600">{desc}</p>
-                  </div>
-                ))}
-                <div className="mt-4 rounded-lg border border-primary/20 bg-primary/5 p-4">
-                  <p className="text-sm text-gray-700">
-                    To assign admin or manager roles, use the <code className="rounded bg-gray-100 px-1 py-0.5 text-xs">scripts/seed-admin.js</code> script
-                    or directly update user roles in your MongoDB database.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

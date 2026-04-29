@@ -1,97 +1,109 @@
-export function getWelcomeEmailTemplate(name: string, email: string) {
+import { roopShreeBusiness } from "@/lib/business";
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://roopshreeudaipur.com";
+
+function escapeHtml(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function money(value: number) {
+  return `Rs ${new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 }).format(value)}`;
+}
+
+function baseTemplate({
+  preheader,
+  title,
+  children,
+  cta
+}: {
+  preheader: string;
+  title: string;
+  children: string;
+  cta?: { label: string; href: string };
+}) {
   return `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #231f20; background-color: #f5f5f5; }
-          .container { max-width: 600px; margin: 0 auto; background-color: white; padding: 40px; }
-          .header { border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 30px; }
-          .header h1 { margin: 0; font-size: 28px; color: #000; }
-          .content { margin: 30px 0; }
-          .content p { margin: 15px 0; }
-          .button { display: inline-block; background-color: #000; color: white; padding: 12px 30px; text-decoration: none; border-radius: 4px; margin: 20px 0; font-weight: bold; }
-          .footer { border-top: 1px solid #e0e0e0; margin-top: 40px; padding-top: 20px; font-size: 12px; color: #666; text-align: center; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <h1>Welcome to Roop Shree</h1>
-          </div>
-          <div class="content">
-            <p>Dear ${name},</p>
-            <p>Thank you for creating an account with us! We're excited to have you as part of the Roop Shree family.</p>
-            <p>Your account is now active and you can start exploring our exclusive collection of ethnic wear.</p>
-            <p><strong>What you can now enjoy:</strong></p>
-            <ul>
-              <li>Access to your saved addresses for faster checkout</li>
-              <li>Track your orders in real-time</li>
-              <li>Manage your wishlist</li>
-              <li>Exclusive member offers and early access to new collections</li>
-            </ul>
-            <a href="https://roopshree.local/dashboard" class="button">View Your Account</a>
-            <p>If you have any questions or need assistance, our support team is here to help.</p>
-            <p>Best regards,<br/>The Roop Shree Team</p>
-          </div>
-          <div class="footer">
-            <p>&copy; 2026 Roop Shree. All rights reserved.</p>
-            <p>This is an automated message, please do not reply to this email.</p>
-          </div>
-        </div>
-      </body>
-    </html>
-  `;
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${escapeHtml(title)}</title>
+  </head>
+  <body style="margin:0;background:#f4f1ed;color:#241f1f;font-family:Arial,Helvetica,sans-serif;">
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escapeHtml(preheader)}</div>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f1ed;padding:28px 12px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;background:#ffffff;border:1px solid #e7ded6;">
+            <tr>
+              <td style="padding:28px 30px 22px;border-bottom:1px solid #e7ded6;">
+                <div style="font-size:11px;letter-spacing:2.4px;text-transform:uppercase;color:#9b6a45;font-weight:700;">${escapeHtml(roopShreeBusiness.location)}</div>
+                <h1 style="margin:8px 0 0;font-family:Georgia,serif;font-size:30px;line-height:1.15;color:#171313;">${escapeHtml(title)}</h1>
+                <p style="margin:10px 0 0;color:#6d625c;font-size:14px;line-height:22px;">${escapeHtml(roopShreeBusiness.name)} - bridal lehengas, sarees, suits and handcrafted occasion wear.</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:30px;">
+                ${children}
+                ${
+                  cta
+                    ? `<div style="margin-top:28px;"><a href="${cta.href}" style="display:inline-block;background:#171313;color:#ffffff;text-decoration:none;padding:13px 22px;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">${escapeHtml(cta.label)}</a></div>`
+                    : ""
+                }
+              </td>
+            </tr>
+            <tr>
+              <td style="background:#171313;color:#f6eee8;padding:24px 30px;">
+                <p style="margin:0 0 8px;font-size:13px;font-weight:700;">Roop Shree Udaipur</p>
+                <p style="margin:0;color:#c8bbb1;font-size:12px;line-height:19px;">
+                  ${escapeHtml(roopShreeBusiness.supportEmail)} | ${escapeHtml(roopShreeBusiness.supportPhone)}<br>
+                  Follow us: <a href="${roopShreeBusiness.instagramUrl}" style="color:#f6eee8;">Instagram</a>
+                </p>
+                <p style="margin:16px 0 0;color:#9f948d;font-size:11px;">This is an automated transactional email from Roop Shree.</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
+}
+
+export function getWelcomeEmailTemplate(name: string, _email: string) {
+  return baseTemplate({
+    title: "Welcome to Roop Shree",
+    preheader: "Your Roop Shree account is ready.",
+    cta: { label: "Open Dashboard", href: `${siteUrl}/dashboard` },
+    children: `
+      <p style="margin:0 0 16px;font-size:15px;line-height:24px;">Dear ${escapeHtml(name)},</p>
+      <p style="margin:0 0 16px;font-size:15px;line-height:24px;">Your account is active. You can now track orders, view invoices, save billing details and receive member-only updates from our Udaipur studio.</p>
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top:22px;border:1px solid #eadfd6;">
+        ${["Order tracking", "Invoice access", "Wishlist and styling notes", "Early access to bridal and festive edits"]
+          .map((item) => `<tr><td style="padding:12px 14px;border-bottom:1px solid #eadfd6;font-size:14px;">${item}</td></tr>`)
+          .join("")}
+      </table>
+    `
+  });
 }
 
 export function getForgotPasswordTemplate(name: string, resetLink: string, expiryTime: string = "2 hours") {
-  return `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #231f20; background-color: #f5f5f5; }
-          .container { max-width: 600px; margin: 0 auto; background-color: white; padding: 40px; }
-          .header { border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 30px; }
-          .header h1 { margin: 0; font-size: 28px; color: #000; }
-          .alert { background-color: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 4px; margin: 20px 0; }
-          .content { margin: 30px 0; }
-          .content p { margin: 15px 0; }
-          .button { display: inline-block; background-color: #000; color: white; padding: 12px 30px; text-decoration: none; border-radius: 4px; margin: 20px 0; font-weight: bold; }
-          .footer { border-top: 1px solid #e0e0e0; margin-top: 40px; padding-top: 20px; font-size: 12px; color: #666; text-align: center; }
-          .code-box { background-color: #f5f5f5; padding: 15px; border-radius: 4px; margin: 20px 0; word-break: break-all; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <h1>Password Reset Request</h1>
-          </div>
-          <div class="alert">
-            <strong>Action Required:</strong> This link will expire in ${expiryTime}
-          </div>
-          <div class="content">
-            <p>Dear ${name},</p>
-            <p>We received a request to reset your password. Click the button below to create a new password.</p>
-            <a href="${resetLink}" class="button">Reset Password</a>
-            <p>Or copy and paste this link in your browser:</p>
-            <div class="code-box">${resetLink}</div>
-            <p><strong>Didn't request a password reset?</strong></p>
-            <p>If you didn't request a password reset, please ignore this email. Your password will remain unchanged. If you believe this was sent in error, please contact our support team.</p>
-            <p>Best regards,<br/>The Roop Shree Team</p>
-          </div>
-          <div class="footer">
-            <p>&copy; 2026 Roop Shree. All rights reserved.</p>
-            <p>This is an automated message, please do not reply to this email.</p>
-          </div>
-        </div>
-      </body>
-    </html>
-  `;
+  return baseTemplate({
+    title: "Reset Your Password",
+    preheader: `Your password reset link expires in ${expiryTime}.`,
+    cta: { label: "Reset Password", href: resetLink },
+    children: `
+      <p style="margin:0 0 16px;font-size:15px;line-height:24px;">Dear ${escapeHtml(name)},</p>
+      <p style="margin:0 0 16px;font-size:15px;line-height:24px;">We received a request to reset your Roop Shree account password. This secure link expires in <strong>${escapeHtml(expiryTime)}</strong>.</p>
+      <div style="margin-top:20px;background:#f8f4f0;border:1px solid #eadfd6;padding:14px;word-break:break-all;font-size:12px;color:#6d625c;">${escapeHtml(resetLink)}</div>
+      <p style="margin:18px 0 0;font-size:13px;line-height:21px;color:#756a64;">If you did not request this, you can safely ignore this email.</p>
+    `
+  });
 }
 
 export function getOrderConfirmationTemplate(
@@ -101,196 +113,74 @@ export function getOrderConfirmationTemplate(
   total: number,
   estimatedDelivery: string
 ) {
-  const itemsHtml = items.map(item => `
-    <tr>
-      <td style="padding: 10px; border-bottom: 1px solid #e0e0e0;">${item.name}</td>
-      <td style="padding: 10px; border-bottom: 1px solid #e0e0e0; text-align: center;">${item.quantity}</td>
-      <td style="padding: 10px; border-bottom: 1px solid #e0e0e0; text-align: right;">₹${item.price.toFixed(2)}</td>
-    </tr>
-  `).join('');
+  const itemsHtml = items
+    .map(
+      (item) => `
+        <tr>
+          <td style="padding:12px;border-bottom:1px solid #eadfd6;font-size:14px;">${escapeHtml(item.name)}</td>
+          <td style="padding:12px;border-bottom:1px solid #eadfd6;text-align:center;font-size:14px;">${item.quantity}</td>
+          <td style="padding:12px;border-bottom:1px solid #eadfd6;text-align:right;font-size:14px;font-weight:700;">${money(item.price)}</td>
+        </tr>`
+    )
+    .join("");
 
-  return `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #231f20; background-color: #f5f5f5; }
-          .container { max-width: 600px; margin: 0 auto; background-color: white; padding: 40px; }
-          .header { border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 30px; }
-          .header h1 { margin: 0; font-size: 28px; color: #000; }
-          .order-id { background-color: #f5f5f5; padding: 15px; border-radius: 4px; margin: 20px 0; }
-          .order-id strong { display: block; font-size: 12px; color: #666; }
-          .order-id .id { display: block; font-size: 18px; font-weight: bold; color: #000; margin-top: 5px; }
-          table { width: 100%; margin: 20px 0; }
-          table th { background-color: #f5f5f5; padding: 10px; text-align: left; font-weight: bold; }
-          .summary { margin: 20px 0; text-align: right; }
-          .summary-row { display: flex; justify-content: space-between; padding: 8px 0; }
-          .summary-total { border-top: 2px solid #000; padding-top: 10px; font-weight: bold; font-size: 18px; }
-          .button { display: inline-block; background-color: #000; color: white; padding: 12px 30px; text-decoration: none; border-radius: 4px; margin: 20px 0; font-weight: bold; }
-          .footer { border-top: 1px solid #e0e0e0; margin-top: 40px; padding-top: 20px; font-size: 12px; color: #666; text-align: center; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <h1>Order Confirmation</h1>
-          </div>
-          <div class="content">
-            <p>Dear ${name},</p>
-            <p>Thank you for your order! We're delighted to confirm that your purchase has been received and is being prepared.</p>
-            
-            <div class="order-id">
-              <strong>Order Number</strong>
-              <span class="id">#${orderId}</span>
-            </div>
-
-            <table>
-              <thead>
-                <tr>
-                  <th>Product</th>
-                  <th>Quantity</th>
-                  <th style="text-align: right;">Price</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${itemsHtml}
-              </tbody>
-            </table>
-
-            <div class="summary">
-              <div class="summary-row">
-                <span>Subtotal</span>
-                <span>₹${total.toFixed(2)}</span>
-              </div>
-              <div class="summary-row">
-                <span>Shipping</span>
-                <span>Free</span>
-              </div>
-              <div class="summary-row summary-total">
-                <span>Total Amount</span>
-                <span>₹${total.toFixed(2)}</span>
-              </div>
-            </div>
-
-            <p><strong>Estimated Delivery:</strong> ${estimatedDelivery}</p>
-
-            <a href="https://roopshree.local/tracking-order?orderId=${orderId}" class="button">Track Your Order</a>
-
-            <p>If you have any questions about your order, please contact our support team.</p>
-            <p>Best regards,<br/>The Roop Shree Team</p>
-          </div>
-          <div class="footer">
-            <p>&copy; 2026 Roop Shree. All rights reserved.</p>
-            <p>This is an automated message, please do not reply to this email.</p>
-          </div>
-        </div>
-      </body>
-    </html>
-  `;
+  return baseTemplate({
+    title: "Order Confirmed",
+    preheader: `Order ${orderId} has been received.`,
+    cta: { label: "Track Order", href: `${siteUrl}/tracking-order?orderId=${orderId}` },
+    children: `
+      <p style="margin:0 0 16px;font-size:15px;line-height:24px;">Dear ${escapeHtml(name)},</p>
+      <p style="margin:0 0 18px;font-size:15px;line-height:24px;">Thank you for shopping with Roop Shree. Your outfit is now in our order queue for quality check, packing and dispatch.</p>
+      <div style="background:#f8f4f0;border:1px solid #eadfd6;padding:16px;margin-bottom:20px;">
+        <span style="display:block;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#8b7668;">Order Number</span>
+        <strong style="display:block;margin-top:4px;font-size:20px;">#${escapeHtml(orderId)}</strong>
+      </div>
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border:1px solid #eadfd6;border-bottom:0;">
+        <thead>
+          <tr style="background:#f8f4f0;">
+            <th style="padding:12px;text-align:left;font-size:12px;text-transform:uppercase;">Product</th>
+            <th style="padding:12px;text-align:center;font-size:12px;text-transform:uppercase;">Qty</th>
+            <th style="padding:12px;text-align:right;font-size:12px;text-transform:uppercase;">Price</th>
+          </tr>
+        </thead>
+        <tbody>${itemsHtml}</tbody>
+      </table>
+      <div style="margin-top:18px;text-align:right;font-size:16px;"><strong>Total: ${money(total)}</strong></div>
+      <p style="margin:18px 0 0;font-size:14px;line-height:22px;color:#6d625c;"><strong>Estimated delivery:</strong> ${escapeHtml(estimatedDelivery)}</p>
+    `
+  });
 }
 
 export function getShippingNotificationTemplate(name: string, orderId: string, trackingNumber: string, carrier: string) {
-  return `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #231f20; background-color: #f5f5f5; }
-          .container { max-width: 600px; margin: 0 auto; background-color: white; padding: 40px; }
-          .header { border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 30px; }
-          .header h1 { margin: 0; font-size: 28px; color: #000; }
-          .alert { background-color: #d4edda; border: 1px solid #28a745; padding: 15px; border-radius: 4px; margin: 20px 0; }
-          .tracking-box { background-color: #f5f5f5; padding: 20px; border-radius: 4px; margin: 20px 0; }
-          .tracking-box p { margin: 10px 0; }
-          .tracking-box strong { display: block; font-size: 12px; color: #666; }
-          .tracking-value { display: block; font-size: 16px; font-weight: bold; color: #000; margin-top: 5px; }
-          .button { display: inline-block; background-color: #000; color: white; padding: 12px 30px; text-decoration: none; border-radius: 4px; margin: 20px 0; font-weight: bold; }
-          .footer { border-top: 1px solid #e0e0e0; margin-top: 40px; padding-top: 20px; font-size: 12px; color: #666; text-align: center; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <h1>Your Order is on the Way!</h1>
-          </div>
-          <div class="alert">
-            <strong>Great news!</strong> Your order has been shipped.
-          </div>
-          <div class="content">
-            <p>Dear ${name},</p>
-            <p>We're excited to let you know that your order is now on its way to you!</p>
-            
-            <div class="tracking-box">
-              <p>
-                <strong>Order Number</strong>
-                <span class="tracking-value">#${orderId}</span>
-              </p>
-              <p>
-                <strong>Tracking Number</strong>
-                <span class="tracking-value">${trackingNumber}</span>
-              </p>
-              <p>
-                <strong>Carrier</strong>
-                <span class="tracking-value">${carrier}</span>
-              </p>
-            </div>
-
-            <a href="https://roopshree.local/tracking-order?orderId=${orderId}" class="button">Track Your Shipment</a>
-
-            <p>You can also use the tracking number above on the ${carrier} website to get real-time updates on your shipment.</p>
-            <p>If you have any concerns or questions, please reach out to our support team.</p>
-            <p>Best regards,<br/>The Roop Shree Team</p>
-          </div>
-          <div class="footer">
-            <p>&copy; 2026 Roop Shree. All rights reserved.</p>
-            <p>This is an automated message, please do not reply to this email.</p>
-          </div>
-        </div>
-      </body>
-    </html>
-  `;
+  return baseTemplate({
+    title: "Your Order Has Shipped",
+    preheader: `Tracking for order ${orderId} is now available.`,
+    cta: { label: "Track Shipment", href: `${siteUrl}/tracking-order?orderId=${orderId}` },
+    children: `
+      <p style="margin:0 0 16px;font-size:15px;line-height:24px;">Dear ${escapeHtml(name)},</p>
+      <p style="margin:0 0 18px;font-size:15px;line-height:24px;">Your Roop Shree order has left our dispatch desk. Use the details below for live tracking.</p>
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border:1px solid #eadfd6;">
+        ${[
+          ["Order Number", `#${orderId}`],
+          ["Tracking Number", trackingNumber],
+          ["Carrier", carrier]
+        ]
+          .map(([label, value]) => `<tr><td style="padding:12px;border-bottom:1px solid #eadfd6;color:#6d625c;font-size:13px;">${label}</td><td style="padding:12px;border-bottom:1px solid #eadfd6;text-align:right;font-weight:700;">${escapeHtml(value)}</td></tr>`)
+          .join("")}
+      </table>
+    `
+  });
 }
 
 export function getContactReplyTemplate(name: string, message: string) {
-  return `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #231f20; background-color: #f5f5f5; }
-          .container { max-width: 600px; margin: 0 auto; background-color: white; padding: 40px; }
-          .header { border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 30px; }
-          .header h1 { margin: 0; font-size: 28px; color: #000; }
-          .content { margin: 30px 0; }
-          .content p { margin: 15px 0; }
-          .footer { border-top: 1px solid #e0e0e0; margin-top: 40px; padding-top: 20px; font-size: 12px; color: #666; text-align: center; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <h1>Thank You for Contacting Us</h1>
-          </div>
-          <div class="content">
-            <p>Dear ${name},</p>
-            <p>Thank you for reaching out to us. We have received your message and appreciate your interest in Roop Shree.</p>
-            <p><strong>Your Message:</strong></p>
-            <p>${message}</p>
-            <p>Our team will review your inquiry and get back to you within 24 hours. We look forward to assisting you.</p>
-            <p>Best regards,<br/>The Roop Shree Team</p>
-          </div>
-          <div class="footer">
-            <p>&copy; 2026 Roop Shree. All rights reserved.</p>
-            <p>This is an automated message, please do not reply to this email.</p>
-          </div>
-        </div>
-      </body>
-    </html>
-  `;
+  return baseTemplate({
+    title: "We Received Your Message",
+    preheader: "Roop Shree will reply to your enquiry soon.",
+    cta: { label: "Visit Store", href: siteUrl },
+    children: `
+      <p style="margin:0 0 16px;font-size:15px;line-height:24px;">Dear ${escapeHtml(name)},</p>
+      <p style="margin:0 0 16px;font-size:15px;line-height:24px;">Thank you for contacting Roop Shree. Our team will review your enquiry and reply within 24 hours.</p>
+      <div style="background:#f8f4f0;border:1px solid #eadfd6;padding:14px;font-size:14px;line-height:22px;color:#6d625c;">${escapeHtml(message)}</div>
+    `
+  });
 }

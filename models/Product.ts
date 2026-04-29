@@ -56,7 +56,13 @@ const seoSchema = new mongoose.Schema(
     title: String,
     description: String,
     keywords: [String],
-    ogImage: String
+    ogImage: String,
+    canonicalUrl: String,
+    schemaType: { type: String, default: "Product" },
+    schemaJson: String,
+    focusKeyword: String,
+    metaRobots: { type: String, default: "index,follow" },
+    altTextTemplate: String
   },
   { _id: false }
 );
@@ -130,6 +136,17 @@ const productSchema = new mongoose.Schema(
         value: { type: String, required: true }
       }
     ],
+    sizeChart: String,
+    blouseDetails: String,
+    liningDetails: String,
+    customizationNotes: String,
+    returnPolicy: String,
+    dispatchTime: { type: String, default: "Ready to ship in 3-7 business days" },
+    careInstructions: [String],
+    includedItems: [String],
+    countryOfOrigin: { type: String, default: "India" },
+    hsnCode: String,
+    taxRate: Number,
 
     // Related products
     upsells: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],

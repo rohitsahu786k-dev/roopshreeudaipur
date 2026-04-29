@@ -16,7 +16,6 @@ export function generateMetadata(
     },
     description,
     metadataBase: new URL(siteUrl),
-    canonical: canonicalUrl,
     openGraph: {
       title: `${title} | Roop Shree`,
       description,
@@ -53,11 +52,11 @@ export function generateMetadata(
 
 export const defaultMetadata: Metadata = {
   title: {
-    default: "Roop Shree | Women's Ethnic Wear",
-    template: "%s | Roop Shree"
+    default: "Roop Shree Udaipur | Bridal Lehengas, Sarees & Ethnic Wear",
+    template: "%s | Roop Shree Udaipur"
   },
   description:
-    "Shop lehenga, ladies suit, kurta set, sharara, saree and dupatta collections with secure checkout and worldwide delivery.",
+    "Shop Roop Shree Udaipur for bridal lehengas, sarees, suits, gowns, Rajputi poshak, Indo-western outfits and hand work ethnic wear.",
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   robots: {
     index: true,
@@ -66,6 +65,7 @@ export const defaultMetadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_IN",
-    url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
+    url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+    siteName: "Roop Shree Udaipur"
   }
 };

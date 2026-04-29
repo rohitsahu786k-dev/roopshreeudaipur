@@ -71,7 +71,18 @@ export default function ProductFormClient({ product, categories }: Props) {
     occasion: (product?.occasion ?? []) as string[],
     workType: product?.workType ?? "",
     washCare: product?.washCare ?? "",
+    sizeChart: product?.sizeChart ?? "",
+    blouseDetails: product?.blouseDetails ?? "",
+    liningDetails: product?.liningDetails ?? "",
+    customizationNotes: product?.customizationNotes ?? "",
+    returnPolicy: product?.returnPolicy ?? "",
+    dispatchTime: product?.dispatchTime ?? "Ready to ship in 3-7 business days",
+    countryOfOrigin: product?.countryOfOrigin ?? "India",
+    hsnCode: product?.hsnCode ?? "",
+    taxRate: product?.taxRate ?? "",
     features: (product?.features ?? []) as string[],
+    careInstructions: (product?.careInstructions ?? []) as string[],
+    includedItems: (product?.includedItems ?? []) as string[],
     attributes: (product?.attributes ?? []) as { name: string; value: string }[],
 
     // Media
@@ -122,7 +133,8 @@ export default function ProductFormClient({ product, categories }: Props) {
         basePrice: Number(form.basePrice),
         comparePrice: form.comparePrice ? Number(form.comparePrice) : undefined,
         costPerItem: form.costPerItem ? Number(form.costPerItem) : undefined,
-        stock: Number(form.stock)
+        stock: Number(form.stock),
+        taxRate: form.taxRate ? Number(form.taxRate) : undefined
       };
 
       const url = isEdit ? `/api/admin/products/${product._id}` : "/api/admin/products";
@@ -366,6 +378,57 @@ export default function ProductFormClient({ product, categories }: Props) {
                         className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
                       />
                     </div>
+                    <div>
+                      <label className="mb-1.5 block text-sm font-medium text-gray-700">Dispatch Time</label>
+                      <input
+                        value={form.dispatchTime}
+                        onChange={(e) => set("dispatchTime", e.target.value)}
+                        placeholder="Ready to ship in 3-7 business days"
+                        className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-sm font-medium text-gray-700">Country of Origin</label>
+                      <input
+                        value={form.countryOfOrigin}
+                        onChange={(e) => set("countryOfOrigin", e.target.value)}
+                        className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-sm font-medium text-gray-700">HSN Code</label>
+                      <input
+                        value={form.hsnCode}
+                        onChange={(e) => set("hsnCode", e.target.value)}
+                        className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-sm font-medium text-gray-700">Tax Rate (%)</label>
+                      <input
+                        type="number"
+                        value={form.taxRate}
+                        onChange={(e) => set("taxRate", e.target.value)}
+                        className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+                      />
+                    </div>
+                    {[
+                      ["sizeChart", "Size Chart / Fit Notes"],
+                      ["blouseDetails", "Blouse Details"],
+                      ["liningDetails", "Lining Details"],
+                      ["customizationNotes", "Customization Notes"],
+                      ["returnPolicy", "Return Policy"]
+                    ].map(([key, label]) => (
+                      <div key={key} className="col-span-2">
+                        <label className="mb-1.5 block text-sm font-medium text-gray-700">{label}</label>
+                        <textarea
+                          value={String(form[key as keyof typeof form] ?? "")}
+                          onChange={(e) => set(key, e.target.value)}
+                          rows={2}
+                          className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+                        />
+                      </div>
+                    ))}
                     <div className="col-span-2">
                       <label className="mb-2 block text-sm font-medium text-gray-700">Occasions</label>
                       <div className="flex flex-wrap gap-2">

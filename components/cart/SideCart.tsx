@@ -25,6 +25,8 @@ export function SideCart({ open, onClose }: SideCartProps) {
     updateQty
   } = useCommerce();
   const upsells = products.slice(2, 5);
+  const freeShipThreshold = 2999;
+  const remaining = Math.max(0, freeShipThreshold - subtotal);
 
   return (
     <div className={`fixed inset-0 z-[100] ${open ? "" : "pointer-events-none"}`} aria-hidden={!open}>
@@ -54,6 +56,14 @@ export function SideCart({ open, onClose }: SideCartProps) {
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4">
           <div className="space-y-4">
+            <div className="border border-black/10 bg-neutral p-3">
+              <p className="text-xs font-bold uppercase tracking-wide">
+                {remaining > 0 ? `Shop ${formatMoney(remaining)} more for free India shipping` : "Free India shipping unlocked"}
+              </p>
+              <div className="mt-2 h-1.5 overflow-hidden bg-white">
+                <div className="h-full bg-primary" style={{ width: `${Math.min(100, (subtotal / freeShipThreshold) * 100)}%` }} />
+              </div>
+            </div>
             {cartItems.map((item) => (
               <article key={item.product.slug} className="grid grid-cols-[78px_1fr] gap-3 border-b border-black/10 pb-4 last:border-b-0">
                 <div className="relative h-[104px] overflow-hidden bg-neutral">

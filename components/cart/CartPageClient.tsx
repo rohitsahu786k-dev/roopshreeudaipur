@@ -13,8 +13,17 @@ export function CartPageClient() {
   const { cartItems, subtotal, discount, total, formatMoney, applyCoupon, appliedCoupon, removeFromCart, updateQty } = useCommerce();
   const [couponInput, setCouponInput] = useState("");
   const [message, setMessage] = useState("");
-  const shippingThreshold = 2999;
+  const [country, setCountry] = useState("IN");
+  const shippingZones = [
+    { code: "IN", name: "India", threshold: 2999, shipping: 99, eta: "3-7 business days" },
+    { code: "US", name: "United States", threshold: 35000, shipping: 2499, eta: "8-14 business days" },
+    { code: "AE", name: "United Arab Emirates", threshold: 25000, shipping: 1499, eta: "6-10 business days" }
+  ];
+  const zone = shippingZones.find((item) => item.code === country) ?? shippingZones[0];
+  const shippingThreshold = zone.threshold;
   const remaining = Math.max(0, shippingThreshold - subtotal);
+  const giftWrapRemaining = Math.max(0, 12000 - subtotal);
+  const bestCoupon = coupons.find((coupon) => subtotal >= coupon.minSpend) ?? coupons[0];
   const crossSells = products.slice(2, 6);
 
   function applyCode(code: string) {
@@ -46,7 +55,7 @@ export function CartPageClient() {
           <div className="space-y-4">
             {remaining > 0 ? (
               <div className="border border-black/10 bg-white p-4 text-sm font-semibold">
-                Add {formatMoney(remaining)} more to unlock free shipping in India.
+                Shop {formatMoney(remaining)} more for free shipping to {zone.name}.
                 <div className="mt-3 h-2 overflow-hidden bg-neutral">
                   <div className="h-full bg-primary" style={{ width: `${Math.min(100, (subtotal / shippingThreshold) * 100)}%` }} />
                 </div>
@@ -54,6 +63,29 @@ export function CartPageClient() {
             ) : (
               <div className="border border-black/10 bg-white p-4 text-sm font-semibold text-primary">Free shipping unlocked for this order.</div>
             )}
+
+            <div className="grid gap-3 md:grid-cols-3">
+              <div className="border border-black/10 bg-white p-4">
+                <p className="text-xs font-bold uppercase tracking-wide text-ink/50">Delivery Country</p>
+                <select value={country} onChange={(event) => setCountry(event.target.value)} className="mt-3 w-full border border-black/15 bg-white px-3 py-2 text-sm font-semibold">
+                  {shippingZones.map((item) => (
+                    <option key={item.code} value={item.code}>{item.name}</option>
+                  ))}
+                </select>
+                <p className="mt-2 text-xs text-ink/55">{zone.eta} after dispatch.</p>
+              </div>
+              <div className="border border-black/10 bg-white p-4">
+                <p className="text-xs font-bold uppercase tracking-wide text-ink/50">Recommended Coupon</p>
+                <button type="button" onClick={() => applyCode(bestCoupon.code)} className="mt-3 w-full border border-dashed border-primary px-3 py-2 text-left">
+                  <span className="block text-sm font-black text-primary">{bestCoupon.code}</span>
+                  <span className="text-xs text-ink/60">{bestCoupon.badge}</span>
+                </button>
+              </div>
+              <div className="border border-black/10 bg-white p-4">
+                <p className="text-xs font-bold uppercase tracking-wide text-ink/50">Premium Add-on</p>
+                <p className="mt-3 text-sm font-semibold">{giftWrapRemaining > 0 ? `Add ${formatMoney(giftWrapRemaining)} for complimentary bridal gift packing.` : "Complimentary bridal gift packing unlocked."}</p>
+              </div>
+            </div>
 
             {cartItems.map((item) => (
               <article key={item.product.slug} className="grid gap-4 border border-black/10 bg-white p-4 sm:grid-cols-[132px_1fr_auto]">
@@ -106,6 +138,7 @@ export function CartPageClient() {
                 {coupons.map((coupon) => (
                   <button key={coupon.code} type="button" onClick={() => applyCode(coupon.code)} className="border border-black/10 p-3 text-left hover:border-primary">
                     <span className="text-xs font-black text-primary">{coupon.code}</span>
+                    <span className="mt-1 block text-[11px] font-bold uppercase tracking-wide text-ink/45">{coupon.badge}</span>
                     <span className="mt-1 block text-xs text-ink/60">{coupon.description}</span>
                   </button>
                 ))}
@@ -121,7 +154,7 @@ export function CartPageClient() {
             <div className="space-y-4 p-5 text-sm">
               <div className="flex justify-between"><span>Subtotal</span><strong>{formatMoney(subtotal)}</strong></div>
               {discount > 0 ? <div className="flex justify-between text-primary"><span>Coupon discount</span><strong>-{formatMoney(discount)}</strong></div> : null}
-              <div className="flex justify-between"><span>Estimated shipping</span><span>{remaining > 0 ? "At checkout" : "Free"}</span></div>
+              <div className="flex justify-between"><span>Estimated shipping</span><span>{remaining > 0 ? formatMoney(zone.shipping) : "Free"}</span></div>
               <div className="flex justify-between"><span>Taxes</span><span>Calculated at checkout</span></div>
               <div className="border-t border-black/10 pt-4">
                 <div className="flex justify-between text-base"><span className="font-semibold">Total</span><strong>{formatMoney(total)}</strong></div>
