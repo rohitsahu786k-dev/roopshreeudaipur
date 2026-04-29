@@ -1,24 +1,40 @@
 "use client";
 
 import { X } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import ReactPlayer from "react-player/lazy";
 
-export function ProductVideoPopup({ url }: { url: string }) {
-  const [open, setOpen] = useState(true);
+function instagramEmbedUrl(url: string) {
+  const clean = url.split("?")[0].replace(/\/$/, "");
+  return `${clean}/embed`;
+}
 
-  if (!open) return null;
+export function ProductVideoPopup({ url }: { url?: string }) {
+  const [open, setOpen] = useState(Boolean(url));
+  const isInstagram = useMemo(() => Boolean(url && /instagram\.com/i.test(url)), [url]);
+
+  if (!url || !open) return null;
 
   return (
-    <aside className="fixed bottom-5 right-5 z-50 w-[min(21rem,calc(100vw-2rem))] overflow-hidden rounded-lg bg-ink text-white shadow-soft">
+    <aside className="fixed bottom-5 right-5 z-50 w-[min(22rem,calc(100vw-2rem))] overflow-hidden bg-ink text-white shadow-soft">
       <div className="flex items-center justify-between px-3 py-2">
         <span className="text-sm font-semibold">Product video</span>
         <button type="button" className="focus-ring rounded p-1 hover:bg-white/10" onClick={() => setOpen(false)} aria-label="Close video">
           <X size={18} />
         </button>
       </div>
-      <div className="aspect-video bg-black">
-        <ReactPlayer url={url} width="100%" height="100%" controls muted />
+      <div className="aspect-[9/13] bg-black">
+        {isInstagram ? (
+          <iframe
+            src={instagramEmbedUrl(url)}
+            title="Instagram product reel"
+            className="h-full w-full"
+            loading="lazy"
+            allow="autoplay; encrypted-media; picture-in-picture"
+          />
+        ) : (
+          <ReactPlayer url={url} width="100%" height="100%" playing muted loop playsinline controls={false} />
+        )}
       </div>
     </aside>
   );

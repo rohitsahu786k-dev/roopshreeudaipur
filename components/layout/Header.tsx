@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Menu, Search, ShoppingBag, UserRound, X } from "lucide-react";
+import { Heart, Menu, Search, ShoppingBag, UserRound, X } from "lucide-react";
 import { useState } from "react";
 import { SideCart } from "@/components/cart/SideCart";
 import { AjaxSearch } from "@/components/search/AjaxSearch";
@@ -21,7 +21,7 @@ const nav = [
 export function Header() {
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const { cartItems, cartOpen, setCartOpen, currencyCode, setCurrencyCode } = useCommerce();
+  const { cartItems, cartOpen, setCartOpen, currencyCode, setCurrencyCode, wishlistCount } = useCommerce();
 
   return (
     <header className="sticky top-0 z-40 border-b border-black/10 bg-white/95 backdrop-blur">
@@ -70,6 +70,14 @@ export function Header() {
           </button>
           <Link aria-label="Account" className="focus-ring rounded p-2 hover:bg-neutral" href="/account">
             <UserRound size={20} />
+          </Link>
+          <Link aria-label="Wishlist" className="focus-ring relative rounded p-2 hover:bg-neutral" href="/wishlist">
+            <Heart size={20} />
+            {wishlistCount > 0 ? (
+              <span className="absolute -right-1 -top-1 grid h-5 w-5 place-items-center rounded-full bg-primary text-[11px] font-bold text-white">
+                {wishlistCount}
+              </span>
+            ) : null}
           </Link>
           <button
             type="button"

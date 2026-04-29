@@ -2,16 +2,17 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ShoppingBag, Star } from "lucide-react";
+import { Heart, ShoppingBag, Star } from "lucide-react";
 import type { Product } from "@/lib/catalog";
 import { useCommerce } from "@/components/providers/CommerceProvider";
 
 export function ProductCard({ product }: { product: Product }) {
-  const { addToCart, formatMoney } = useCommerce();
+  const { addToCart, formatMoney, isWishlisted, toggleWishlist } = useCommerce();
   const secondaryImage = product.gallery.find((image) => image !== product.image) ?? product.image;
 
   return (
     <article className="group bg-white">
+      <div className="relative">
       <Link href={`/product/${product.slug}`} className="block">
         <div className="relative aspect-[4/5] overflow-hidden bg-neutral">
           <Image
@@ -30,6 +31,15 @@ export function ProductCard({ product }: { product: Product }) {
           />
         </div>
       </Link>
+      <button
+        type="button"
+        aria-label={`${isWishlisted(product.slug) ? "Remove" : "Add"} ${product.name} ${isWishlisted(product.slug) ? "from" : "to"} wishlist`}
+        onClick={() => toggleWishlist(product)}
+        className={`absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-white/90 shadow transition ${isWishlisted(product.slug) ? "text-primary" : "text-ink"}`}
+      >
+        <Heart size={18} fill={isWishlisted(product.slug) ? "currentColor" : "none"} />
+      </button>
+      </div>
       <div className="space-y-2 px-4 pt-3 pb-4">
         <div className="flex items-center gap-1 text-sm text-accent">
           <Star size={16} fill="currentColor" />

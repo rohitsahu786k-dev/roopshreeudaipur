@@ -25,7 +25,7 @@ export default function ProductDetailPage({ params }: { params: { slug: string }
   return (
     <>
       <ProductDetailClient product={product} related={related} />
-      <ProductVideoPopup url={product.videoUrl} />
+      {product.videoUrl ? <ProductVideoPopup url={product.videoUrl} /> : null}
     </>
   );
 }

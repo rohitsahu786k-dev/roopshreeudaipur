@@ -24,7 +24,15 @@ export type Product = {
   washCare: string;
   colors: { name: string; hex: string }[];
   sizes: string[];
-  videoUrl: string;
+  videoUrl?: string;
+  seller?: string;
+  sku?: string;
+  dispatchTime?: string;
+  returnPolicy?: string;
+  sizeGuideNotes?: string;
+  includedItems?: string[];
+  careInstructions?: string[];
+  moreInformation?: { label: string; value: string }[];
   featured?: boolean;
 };
 

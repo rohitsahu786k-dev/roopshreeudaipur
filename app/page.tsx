@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ChevronRight } from "lucide-react";
+import { InstagramVideoCarousel } from "@/components/home/InstagramVideoCarousel";
 import { roopShreeBusiness } from "@/lib/business";
 import { formatPrice, products } from "@/lib/catalog";
 
@@ -182,6 +183,8 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        <InstagramVideoCarousel />
 
         <section className="mt-8">
           <div className="grid gap-3 lg:grid-cols-[1.12fr_0.88fr]">

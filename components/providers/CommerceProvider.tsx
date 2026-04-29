@@ -1,10 +1,10 @@
 "use client";
 
-import { createContext, type ReactNode, useContext, useMemo, useState } from "react";
+import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from "react";
 import { cartItems as initialCartItems } from "@/lib/cart";
 import { coupons, getCouponDiscount, type Coupon } from "@/lib/coupons";
 import { currencies } from "@/lib/currency";
-import type { Product } from "@/lib/catalog";
+import { products, type Product } from "@/lib/catalog";
 
 type CartItem = (typeof initialCartItems)[number];
 
@@ -20,12 +20,17 @@ type CommerceContextValue = {
   subtotal: number;
   discount: number;
   total: number;
+  wishlist: Product[];
+  wishlistCount: number;
   formatMoney: (value: number) => string;
   addToCart: (product: Product, options?: { qty?: number; size?: string; color?: string }) => void;
   removeFromCart: (slug: string) => void;
   updateQty: (slug: string, qty: number) => void;
   applyCoupon: (code: string) => { ok: boolean; message: string };
   clearCoupon: () => void;
+  toggleWishlist: (product: Product) => void;
+  removeFromWishlist: (slug: string) => void;
+  isWishlisted: (slug: string) => boolean;
 };
 
 const CommerceContext = createContext<CommerceContextValue | null>(null);
@@ -34,11 +39,25 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
   const [currencyCode, setCurrencyCode] = useState("INR");
   const [couponCode, setCouponCode] = useState("");
   const [cartItems, setCartItems] = useState<CartItem[]>(initialCartItems);
+  const [wishlistSlugs, setWishlistSlugs] = useState<string[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
   const subtotal = cartItems.reduce((sum, item) => sum + item.product.price * item.qty, 0);
   const { coupon, discount } = getCouponDiscount(couponCode, subtotal);
   const currency = currencies.find((item) => item.code === currencyCode) ?? currencies[0];
   const total = Math.max(0, subtotal - discount);
+  const wishlist = useMemo(
+    () => wishlistSlugs.map((slug) => products.find((product) => product.slug === slug)).filter(Boolean) as Product[],
+    [wishlistSlugs]
+  );
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem("roopshree_wishlist");
+    if (stored) setWishlistSlugs(JSON.parse(stored));
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem("roopshree_wishlist", JSON.stringify(wishlistSlugs));
+  }, [wishlistSlugs]);
 
   const value = useMemo<CommerceContextValue>(
     () => ({
@@ -53,6 +72,8 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
       subtotal,
       discount,
       total,
+      wishlist,
+      wishlistCount: wishlistSlugs.length,
       formatMoney(value) {
         return new Intl.NumberFormat("en-IN", {
           style: "currency",
@@ -120,9 +141,20 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
       },
       clearCoupon() {
         setCouponCode("");
+      },
+      toggleWishlist(product) {
+        setWishlistSlugs((current) =>
+          current.includes(product.slug) ? current.filter((slug) => slug !== product.slug) : [...current, product.slug]
+        );
+      },
+      removeFromWishlist(slug) {
+        setWishlistSlugs((current) => current.filter((item) => item !== slug));
+      },
+      isWishlisted(slug) {
+        return wishlistSlugs.includes(slug);
       }
     }),
-    [cartItems, coupon, couponCode, currency, currencyCode, discount, subtotal, total, cartOpen]
+    [cartItems, coupon, couponCode, currency, currencyCode, discount, subtotal, total, cartOpen, wishlist, wishlistSlugs]
   );
 
   return <CommerceContext.Provider value={value}>{children}</CommerceContext.Provider>;
