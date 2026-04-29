@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductMediaPlayer } from "@/components/product/ProductMediaPlayer";
+import { ProductReviews } from "@/components/product/ProductReviews";
 import { SizeGuidePopup } from "@/components/product/SizeGuidePopup";
 import { useCommerce } from "@/components/providers/CommerceProvider";
 import type { Product } from "@/lib/catalog";
@@ -91,7 +92,7 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
   return (
     <section className="bg-[#f8f8f8]">
       <div className="mx-auto max-w-7xl px-4 py-8">
-        <div className="grid gap-10 lg:grid-cols-[1.08fr_0.92fr]">
+        <div className="grid gap-10 lg:grid-cols-2">
           <div className="grid gap-4 sm:grid-cols-[86px_1fr]">
             <div className="order-2 flex gap-3 overflow-x-auto sm:order-1 sm:block sm:space-y-3">
               {product.gallery.map((image) => (
@@ -328,6 +329,8 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
             ))}
           </div>
         </section>
+
+        <ProductReviews product={product} />
 
         <div className="mt-8 flex items-center justify-center gap-2 bg-white p-4 text-sm font-semibold">
           <PackageCheck className="text-primary" size={20} /> Authentic designer products. Quality checked before dispatch.
