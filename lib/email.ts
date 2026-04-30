@@ -4,12 +4,15 @@ import {
   getForgotPasswordTemplate,
   getOrderConfirmationTemplate,
   getShippingNotificationTemplate,
-  getContactReplyTemplate
+  getContactReplyTemplate,
+  getOtpEmailTemplate
 } from "./emailTemplates";
 
 type ContactEmail = {
   name: string;
   email: string;
+  phone?: string;
+  subject?: string;
   message: string;
 };
 
@@ -57,7 +60,7 @@ export async function sendEmail({ to, subject, html }: { to: string; subject: st
   });
 }
 
-export async function sendContactEmail({ name, email, message }: ContactEmail) {
+export async function sendContactEmail({ name, email, phone, subject, message }: ContactEmail) {
   const config = getGoogleSmtpConfig();
   const transporter = nodemailer.createTransport({
     host: config.host,
@@ -74,12 +77,14 @@ export async function sendContactEmail({ name, email, message }: ContactEmail) {
     from: `"Roop Shree" <${config.from}>`,
     to: config.from,
     replyTo: email,
-    subject: `New contact message from ${name}`,
-    text: `Name: ${name}\nEmail: ${email}\n\n${message}`,
+    subject: subject ? `New ${subject} message from ${name}` : `New contact message from ${name}`,
+    text: `Name: ${name}\nEmail: ${email}\nPhone: ${phone ?? "Not provided"}\nSubject: ${subject ?? "Contact enquiry"}\n\n${message}`,
     html: `
       <p><strong>Name:</strong> ${escapeHtml(name)}</p>
       <p><strong>Email:</strong> ${escapeHtml(email)}</p>
-      <p>${escapeHtml(message).replaceAll("\n", "<br />")}></p>
+      <p><strong>Phone:</strong> ${escapeHtml(phone ?? "Not provided")}</p>
+      <p><strong>Subject:</strong> ${escapeHtml(subject ?? "Contact enquiry")}</p>
+      <p>${escapeHtml(message).replaceAll("\n", "<br />")}</p>
     `
   });
 
@@ -89,6 +94,14 @@ export async function sendContactEmail({ name, email, message }: ContactEmail) {
     to: email,
     subject: "We received your message - Roop Shree",
     html: getContactReplyTemplate(name, message)
+  });
+}
+
+export async function sendOtpEmail(name: string, email: string, otp: string) {
+  await sendEmail({
+    to: email,
+    subject: `${otp} is your Roop Shree verification code`,
+    html: getOtpEmailTemplate(name, otp)
   });
 }
 

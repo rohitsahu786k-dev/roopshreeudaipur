@@ -3,7 +3,7 @@ import { sendContactEmail } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, email, message } = await request.json();
+    const { name, email, phone, subject, message } = await request.json();
 
     if (!name || !email || !message) {
       return NextResponse.json({ error: "Name, email, and message are required" }, { status: 400 });
@@ -12,6 +12,8 @@ export async function POST(request: NextRequest) {
     await sendContactEmail({
       name: String(name).trim(),
       email: String(email).trim(),
+      phone: phone ? String(phone).trim() : undefined,
+      subject: subject ? String(subject).trim() : undefined,
       message: String(message).trim()
     });
 

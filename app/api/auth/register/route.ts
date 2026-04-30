@@ -1,8 +1,8 @@
 import bcrypt from "bcryptjs";
 import { NextResponse, type NextRequest } from "next/server";
-import { setAuthCookie, signAuthToken } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { User } from "@/models/User";
+import { sendOtpEmail } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,8 +35,12 @@ export async function POST(request: NextRequest) {
       emailVerified: false
     });
 
-    // In a real app, you'd send an email here
     console.log(`Verification OTP for ${email}: ${otp}`);
+    try {
+      await sendOtpEmail(name, String(email).toLowerCase().trim(), otp);
+    } catch (emailError) {
+      console.error("Failed to send OTP email:", emailError);
+    }
 
     return NextResponse.json({
       message: "Registration successful. Please verify your email.",

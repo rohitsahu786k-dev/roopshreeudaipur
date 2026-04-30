@@ -8,6 +8,7 @@ type BannerItem = {
   title: string;
   subtitle?: string;
   image: string;
+  mobileImage?: string;
   placement: string;
   ctaLabel?: string;
   ctaHref?: string;
@@ -29,6 +30,16 @@ const emptyBanner = (): Partial<BannerItem> => ({
   position: 0,
   isActive: true
 });
+
+const bannerTextFields: Array<[keyof BannerItem, string, boolean]> = [
+  ["title", "Title", false],
+  ["subtitle", "Subtitle (optional)", true],
+  ["image", "Desktop Image URL", true],
+  ["mobileImage", "Mobile Image URL (optional)", true],
+  ["ctaLabel", "CTA Button Label", false],
+  ["ctaHref", "CTA Link URL", false],
+  ["couponCode", "Coupon Code (optional)", false]
+];
 
 export default function BannersClient() {
   const [banners, setBanners] = useState<BannerItem[]>([]);
@@ -90,17 +101,10 @@ export default function BannersClient() {
               <button onClick={() => setForm(null)} className="text-gray-400 hover:text-gray-700"><X className="h-5 w-5" /></button>
             </div>
             <div className="grid gap-3 md:grid-cols-2">
-              {[
-                ["title", "Title"],
-                ["subtitle", "Subtitle"],
-                ["image", "Image URL"],
-                ["ctaLabel", "CTA Label"],
-                ["ctaHref", "CTA Link"],
-                ["couponCode", "Coupon Code"]
-              ].map(([key, label]) => (
-                <label key={key} className={key === "subtitle" || key === "image" ? "md:col-span-2" : ""}>
+              {bannerTextFields.map(([key, label, fullWidth]) => (
+                <label key={key} className={fullWidth ? "md:col-span-2" : ""}>
                   <span className="mb-1 block text-sm font-medium text-gray-700">{label}</span>
-                  <input value={String(form[key as keyof BannerItem] ?? "")} onChange={(e) => setForm((p) => ({ ...p!, [key]: e.target.value }))} className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm" />
+                  <input value={String(form[key] ?? "")} onChange={(e) => setForm((p) => ({ ...p!, [key]: e.target.value }))} className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm" />
                 </label>
               ))}
               <label>

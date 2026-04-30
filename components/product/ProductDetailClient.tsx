@@ -138,18 +138,29 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
             </div>
           </div>
 
-          <div className="bg-white p-5 md:p-7">
-            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-primary">{product.category.replace("-", " ")}</p>
-            <h1 className="mt-3 text-3xl font-semibold uppercase leading-tight tracking-wide">{product.name}</h1>
-            <p className="mt-2 text-sm text-ink/60">{product.shortDescription}</p>
-            <div className="mt-4 flex items-center gap-2 text-accent">
-              <Star size={18} fill="currentColor" />
-              <span className="font-bold">{product.rating}</span>
-              <span className="text-sm text-ink/55">{product.reviewCount} reviews</span>
+          <div className="bg-white p-4 sm:p-5 md:p-7">
+            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-ink/50 sm:text-[11px]">{product.category.replace(/-/g, " ")}</p>
+            <h1 className="mt-2 text-lg font-semibold uppercase leading-tight tracking-wide sm:text-xl md:text-2xl lg:text-3xl">{product.name}</h1>
+            <p className="mt-1.5 text-sm leading-relaxed text-ink/60">{product.shortDescription}</p>
+            <div className="mt-3 flex items-center gap-2">
+              <div className="flex items-center gap-0.5">
+                {Array.from({ length: 5 }, (_, i) => (
+                  <Star key={i} size={14} fill={i < Math.round(product.rating) ? "currentColor" : "none"} className={i < Math.round(product.rating) ? "text-[#f6a400]" : "text-black/20"} />
+                ))}
+              </div>
+              <span className="text-sm font-bold">{product.rating.toFixed(1)}</span>
+              <span className="text-xs text-ink/50">({product.reviewCount} reviews)</span>
             </div>
-            <div className="mt-5 flex items-end gap-3">
-              <p className="text-3xl font-bold text-primary">{formatMoney(product.price)}</p>
-              <p className="text-lg text-ink/40 line-through">{formatMoney(product.comparePrice)}</p>
+            <div className="mt-4 flex items-end gap-3">
+              <p className="text-2xl font-bold text-primary sm:text-3xl">{formatMoney(product.price)}</p>
+              {product.comparePrice > product.price && (
+                <>
+                  <p className="text-base text-ink/40 line-through sm:text-lg">{formatMoney(product.comparePrice)}</p>
+                  <span className="mb-0.5 rounded bg-green-50 px-2 py-0.5 text-xs font-bold text-green-700">
+                    {Math.round(((product.comparePrice - product.price) / product.comparePrice) * 100)}% off
+                  </span>
+                </>
+              )}
             </div>
             <p className="mt-2 text-xs font-semibold text-ink/55">Inclusive of all taxes. Shipping calculated at checkout.</p>
             <div className="mt-4 flex flex-wrap gap-2">

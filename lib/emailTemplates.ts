@@ -172,6 +172,22 @@ export function getShippingNotificationTemplate(name: string, orderId: string, t
   });
 }
 
+export function getOtpEmailTemplate(name: string, otp: string) {
+  return baseTemplate({
+    title: "Verify Your Email",
+    preheader: `Your Roop Shree verification code is ${otp}. Valid for 10 minutes.`,
+    children: `
+      <p style="margin:0 0 16px;font-size:15px;line-height:24px;">Dear ${escapeHtml(name)},</p>
+      <p style="margin:0 0 20px;font-size:15px;line-height:24px;">Use the code below to verify your email address and activate your Roop Shree account.</p>
+      <div style="margin:28px auto;text-align:center;">
+        <div style="display:inline-block;background:#171313;color:#ffffff;padding:18px 48px;font-size:34px;font-weight:700;letter-spacing:14px;font-family:monospace;">${escapeHtml(otp)}</div>
+      </div>
+      <p style="margin:0 0 8px;font-size:13px;line-height:21px;color:#756a64;">This code is valid for <strong>10 minutes</strong>. Do not share it with anyone.</p>
+      <p style="margin:0;font-size:13px;line-height:21px;color:#756a64;">If you did not create an account with Roop Shree, please ignore this email.</p>
+    `
+  });
+}
+
 export function getContactReplyTemplate(name: string, message: string) {
   return baseTemplate({
     title: "We Received Your Message",
