@@ -10,7 +10,7 @@ import { coupons } from "@/lib/coupons";
 import { ProductCard } from "@/components/ProductCard";
 
 export function CartPageClient() {
-  const { cartItems, subtotal, discount, total, formatMoney, applyCoupon, appliedCoupon, removeFromCart, updateQty } = useCommerce();
+  const { cartItems, subtotal, discount, tax, shipping, total, formatMoney, applyCoupon, appliedCoupon, clearCoupon, removeFromCart, updateQty, clearCart } = useCommerce();
   const [couponInput, setCouponInput] = useState("");
   const [message, setMessage] = useState("");
   const [country, setCountry] = useState("IN");
@@ -87,37 +87,49 @@ export function CartPageClient() {
               </div>
             </div>
 
+            {cartItems.length === 0 ? (
+              <div className="grid place-items-center border border-black/10 bg-white px-6 py-16 text-center">
+                <ShoppingBag className="text-primary" size={38} />
+                <h2 className="mt-4 text-xl font-bold">Your cart is empty</h2>
+                <p className="mt-2 max-w-md text-sm leading-6 text-ink/60">Add products from the shop to review variants, coupons, and checkout totals here.</p>
+                <Link href="/shop" className="focus-ring mt-5 bg-ink px-5 py-3 text-sm font-bold uppercase tracking-wide text-white">
+                  Continue shopping
+                </Link>
+              </div>
+            ) : null}
+
             {cartItems.map((item) => (
-              <article key={item.product.slug} className="grid gap-4 border border-black/10 bg-white p-4 sm:grid-cols-[132px_1fr_auto]">
+              <article key={item.variant_id} className="grid gap-4 border border-black/10 bg-white p-4 sm:grid-cols-[132px_1fr_auto]">
                 <div className="relative aspect-[3/4] overflow-hidden bg-neutral">
-                  <Image src={item.product.image} alt={item.product.name} fill className="object-cover" sizes="132px" />
+                  <Image src={item.image} alt={item.name} fill className="object-cover" sizes="132px" />
                 </div>
                 <div className="min-w-0">
-                  <h2 className="text-base font-semibold uppercase tracking-wide">{item.product.name}</h2>
+                  <h2 className="text-base font-semibold uppercase tracking-wide">{item.name}</h2>
                   <p className="mt-2 max-w-xl text-sm leading-6 text-ink/60">{item.product.shortDescription}</p>
                   <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-wide text-ink/60">
                     <span className="border border-black/10 px-3 py-2">Size {item.size}</span>
                     <span className="border border-black/10 px-3 py-2">{item.color}</span>
                     <span className="border border-black/10 px-3 py-2">{item.product.category.replace("-", " ")}</span>
+                    <span className="border border-black/10 px-3 py-2">{item.stock_status.replace(/_/g, " ")}</span>
                   </div>
                   <div className="mt-5 flex items-center gap-4">
                     <div className="flex items-center border border-black/15">
-                      <button type="button" className="grid h-9 w-9 place-items-center hover:bg-neutral" aria-label="Decrease quantity" onClick={() => updateQty(item.product.slug, item.qty - 1)}>
+                      <button type="button" className="grid h-9 w-9 place-items-center hover:bg-neutral" aria-label="Decrease quantity" onClick={() => updateQty(item.variant_id, item.quantity - 1)}>
                         <Minus size={14} />
                       </button>
-                      <span className="grid h-9 w-10 place-items-center text-sm font-semibold">{item.qty}</span>
-                      <button type="button" className="grid h-9 w-9 place-items-center hover:bg-neutral" aria-label="Increase quantity" onClick={() => updateQty(item.product.slug, item.qty + 1)}>
+                      <span className="grid h-9 w-10 place-items-center text-sm font-semibold">{item.quantity}</span>
+                      <button type="button" disabled={item.quantity >= item.available_stock} className="grid h-9 w-9 place-items-center hover:bg-neutral disabled:opacity-40" aria-label="Increase quantity" onClick={() => updateQty(item.variant_id, item.quantity + 1)}>
                         <Plus size={14} />
                       </button>
                     </div>
-                    <button type="button" className="focus-ring flex items-center gap-2 text-sm font-semibold text-ink/55 hover:text-primary" onClick={() => removeFromCart(item.product.slug)}>
+                    <button type="button" className="focus-ring flex items-center gap-2 text-sm font-semibold text-ink/55 hover:text-primary" onClick={() => removeFromCart(item.variant_id)}>
                       <Trash2 size={16} /> Remove
                     </button>
                   </div>
                 </div>
                 <div className="text-left sm:text-right">
-                  <p className="font-bold text-primary">{formatMoney(item.product.price * item.qty)}</p>
-                  <p className="mt-1 text-xs text-ink/45 line-through">{formatMoney(item.product.comparePrice * item.qty)}</p>
+                  <p className="font-bold text-primary">{formatMoney(item.subtotal)}</p>
+                  <p className="mt-1 text-xs text-ink/45 line-through">{formatMoney(item.price * item.quantity)}</p>
                 </div>
               </article>
             ))}
@@ -144,6 +156,12 @@ export function CartPageClient() {
                 ))}
               </div>
               {message ? <p className={`mt-3 text-sm font-semibold ${appliedCoupon ? "text-primary" : "text-red-700"}`}>{message}</p> : null}
+              {appliedCoupon ? (
+                <div className="mt-3 flex items-center justify-between border border-primary/20 bg-primary/5 px-3 py-2 text-sm font-semibold text-primary">
+                  <span>{appliedCoupon.code} applied</span>
+                  <button type="button" onClick={clearCoupon} className="text-xs font-bold uppercase text-ink/60 hover:text-primary">Remove</button>
+                </div>
+              ) : null}
             </section>
           </div>
 
@@ -154,11 +172,14 @@ export function CartPageClient() {
             <div className="space-y-4 p-5 text-sm">
               <div className="flex justify-between"><span>Subtotal</span><strong>{formatMoney(subtotal)}</strong></div>
               {discount > 0 ? <div className="flex justify-between text-primary"><span>Coupon discount</span><strong>-{formatMoney(discount)}</strong></div> : null}
-              <div className="flex justify-between"><span>Estimated shipping</span><span>{remaining > 0 ? formatMoney(zone.shipping) : "Free"}</span></div>
-              <div className="flex justify-between"><span>Taxes</span><span>Calculated at checkout</span></div>
+              <div className="flex justify-between"><span>Estimated shipping</span><span>{shipping > 0 ? formatMoney(shipping) : "Free"}</span></div>
+              <div className="flex justify-between"><span>Taxes</span><span>{formatMoney(tax)}</span></div>
               <div className="border-t border-black/10 pt-4">
                 <div className="flex justify-between text-base"><span className="font-semibold">Total</span><strong>{formatMoney(total)}</strong></div>
               </div>
+              <button type="button" onClick={clearCart} className="focus-ring w-full border border-black/20 px-5 py-2.5 text-sm font-bold uppercase tracking-wide hover:bg-neutral">
+                Clear Cart
+              </button>
               <Link href="/checkout" className="focus-ring flex items-center justify-center gap-2 bg-ink px-5 py-3 font-bold uppercase tracking-wide text-white">
                 <ShoppingBag size={18} /> Proceed To Checkout
               </Link>

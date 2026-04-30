@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Search, Users, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Users, ChevronLeft, ChevronRight, MoreVertical, ShieldAlert, ShieldCheck, Trash2 } from "lucide-react";
 import { format } from "date-fns";
+import toast from "react-hot-toast";
 
 type Customer = {
   _id: string;
@@ -13,6 +14,7 @@ type Customer = {
   totalOrders: number;
   totalSpent: number;
   lastOrderAt?: string;
+  emailVerified: boolean;
 };
 
 export default function CustomersClient() {
@@ -21,6 +23,7 @@ export default function CustomersClient() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({ total: 0, pages: 1 });
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
 
   const fetchCustomers = useCallback(async () => {
     setLoading(true);
@@ -31,6 +34,35 @@ export default function CustomersClient() {
     setPagination(data.pagination ?? { total: 0, pages: 1 });
     setLoading(false);
   }, [page, search]);
+
+  const toggleVerify = async (id: string, currentStatus: boolean) => {
+    try {
+      const res = await fetch(`/api/admin/customers/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ emailVerified: !currentStatus })
+      });
+      if (res.ok) {
+        toast.success(`User ${!currentStatus ? "verified" : "unverified"}`);
+        fetchCustomers();
+      }
+    } catch {
+      toast.error("Failed to update user");
+    }
+  };
+
+  const deleteUser = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this user?")) return;
+    try {
+      const res = await fetch(`/api/admin/customers/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        toast.success("User deleted");
+        fetchCustomers();
+      }
+    } catch {
+      toast.error("Failed to delete user");
+    }
+  };
 
   useEffect(() => {
     const t = setTimeout(fetchCustomers, search ? 400 : 0);
@@ -75,11 +107,11 @@ export default function CustomersClient() {
                 <thead className="bg-gray-50 text-xs text-gray-500 uppercase border-b border-gray-200">
                   <tr>
                     <th className="px-4 py-3 text-left">Customer</th>
-                    <th className="px-4 py-3 text-left">Phone</th>
+                    <th className="px-4 py-3 text-left">Status</th>
                     <th className="px-4 py-3 text-left">Joined</th>
                     <th className="px-4 py-3 text-left">Orders</th>
                     <th className="px-4 py-3 text-left">Total Spent</th>
-                    <th className="px-4 py-3 text-left">Last Order</th>
+                    <th className="px-4 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -96,7 +128,14 @@ export default function CustomersClient() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-gray-500">{c.phone ?? "—"}</td>
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wide ${
+                          c.emailVerified ? "bg-green-50 text-green-700" : "bg-yellow-50 text-yellow-700"
+                        }`}>
+                          {c.emailVerified ? <ShieldCheck size={12} /> : <ShieldAlert size={12} />}
+                          {c.emailVerified ? "Verified" : "Pending"}
+                        </span>
+                      </td>
                       <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
                         {format(new Date(c.createdAt), "dd MMM yyyy")}
                       </td>
@@ -104,8 +143,34 @@ export default function CustomersClient() {
                       <td className="px-4 py-3 font-semibold text-gray-900">
                         ₹{c.totalSpent?.toLocaleString() ?? 0}
                       </td>
-                      <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
-                        {c.lastOrderAt ? format(new Date(c.lastOrderAt), "dd MMM yyyy") : "—"}
+                      <td className="px-4 py-3 text-right">
+                        <div className="relative inline-block text-left">
+                          <button 
+                            onClick={() => setActiveMenu(activeMenu === c._id ? null : c._id)}
+                            className="p-1 rounded-lg hover:bg-gray-100 text-gray-400"
+                          >
+                            <MoreVertical size={16} />
+                          </button>
+                          
+                          {activeMenu === c._id && (
+                            <div className="absolute right-0 z-10 mt-1 w-40 rounded-lg border border-gray-100 bg-white p-1 shadow-lg">
+                              <button 
+                                onClick={() => { toggleVerify(c._id, c.emailVerified); setActiveMenu(null); }}
+                                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-xs font-medium text-gray-700 hover:bg-gray-50"
+                              >
+                                {c.emailVerified ? <ShieldAlert size={14} /> : <ShieldCheck size={14} />}
+                                {c.emailVerified ? "Mark Unverified" : "Mark Verified"}
+                              </button>
+                              <button 
+                                onClick={() => { deleteUser(c._id); setActiveMenu(null); }}
+                                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-xs font-medium text-red-600 hover:bg-red-50"
+                              >
+                                <Trash2 size={14} />
+                                Delete User
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}

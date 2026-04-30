@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import "./globals.css";
-import { Footer } from "@/components/layout/Footer";
-import { Header } from "@/components/layout/Header";
+import { SiteChrome } from "@/components/layout/SiteChrome";
 import { CommerceProvider } from "@/components/providers/CommerceProvider";
 
 const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-montserrat" });
@@ -64,9 +63,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={montserrat.variable}>
       <body className="font-sans antialiased">
         <CommerceProvider>
-          <Header />
-          <main>{children}</main>
-          <Footer />
+          <SiteChrome>{children}</SiteChrome>
         </CommerceProvider>
       </body>
     </html>

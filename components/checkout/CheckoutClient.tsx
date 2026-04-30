@@ -9,10 +9,12 @@ import { useCommerce } from "@/components/providers/CommerceProvider";
 const countries = ["India", "United States", "United Kingdom", "United Arab Emirates", "Canada", "Australia", "Singapore"];
 
 export function CheckoutClient() {
-  const { cartItems, subtotal, discount, total, formatMoney, appliedCoupon } = useCommerce();
+  const { cartItems, subtotal, discount, total, formatMoney, applyCoupon, clearCoupon, appliedCoupon } = useCommerce();
   const [country, setCountry] = useState("India");
   const [pincode, setPincode] = useState("");
   const [delivery, setDelivery] = useState("");
+  const [couponInput, setCouponInput] = useState("");
+  const [couponMessage, setCouponMessage] = useState("");
 
   function checkDelivery() {
     if (!/^\d{5,6}$/.test(pincode)) {
@@ -37,6 +39,13 @@ export function CheckoutClient() {
       },
       () => setDelivery("Allow location permission or enter pincode manually.")
     );
+  }
+
+  function submitCoupon(formData: FormData) {
+    const code = String(formData.get("coupon") ?? couponInput);
+    const result = applyCoupon(code);
+    setCouponMessage(result.message);
+    if (result.ok) setCouponInput(code.toUpperCase());
   }
 
   return (
@@ -110,24 +119,40 @@ export function CheckoutClient() {
             </div>
             <div className="space-y-4 p-5">
               {cartItems.map((item) => (
-                <div key={item.product.slug} className="grid grid-cols-[64px_1fr_auto] gap-3">
+                <div key={item.variant_id} className="grid grid-cols-[64px_1fr_auto] gap-3">
                   <div className="relative aspect-[3/4] overflow-hidden bg-neutral">
-                    <Image src={item.product.image} alt={item.product.name} fill className="object-cover" sizes="64px" />
+                    <Image src={item.image} alt={item.name} fill className="object-cover" sizes="64px" />
                   </div>
                   <div>
-                    <p className="line-clamp-2 text-xs font-bold uppercase">{item.product.name}</p>
-                    <p className="mt-1 text-xs text-ink/55">Qty {item.qty} / {item.size}</p>
+                    <p className="line-clamp-2 text-xs font-bold uppercase">{item.name}</p>
+                    <p className="mt-1 text-xs text-ink/55">Qty {item.quantity} / {item.size}</p>
                   </div>
-                  <p className="text-sm font-bold">{formatMoney(item.product.price * item.qty)}</p>
+                  <p className="text-sm font-bold">{formatMoney(item.subtotal)}</p>
                 </div>
               ))}
+              <form action={submitCoupon} className="flex gap-2 border-t border-black/10 pt-4">
+                <input
+                  name="coupon"
+                  value={couponInput}
+                  onChange={(event) => setCouponInput(event.target.value.toUpperCase())}
+                  placeholder="Coupon code"
+                  className="focus-ring min-w-0 flex-1 border border-black/15 px-3 py-3 text-sm font-semibold uppercase"
+                />
+                <button type="submit" className="focus-ring bg-ink px-4 py-3 text-xs font-bold uppercase text-white">Apply</button>
+              </form>
+              {couponMessage ? <p className="text-sm font-semibold text-primary">{couponMessage}</p> : null}
               <div className="space-y-3 border-t border-black/10 pt-4 text-sm">
                 <div className="flex justify-between"><span>Subtotal</span><strong>{formatMoney(subtotal)}</strong></div>
                 {discount > 0 ? <div className="flex justify-between text-primary"><span>Coupon discount</span><strong>-{formatMoney(discount)}</strong></div> : null}
                 <div className="flex justify-between"><span>Shipping</span><span>Calculated after address</span></div>
                 <div className="flex justify-between text-base"><span className="font-bold">Total</span><strong>{formatMoney(total)}</strong></div>
               </div>
-              {appliedCoupon ? <p className="flex items-center gap-2 text-sm font-semibold text-primary"><BadgeCheck size={16} /> {appliedCoupon.code} applied.</p> : null}
+              {appliedCoupon ? (
+                <div className="flex items-center justify-between gap-3 text-sm font-semibold text-primary">
+                  <p className="flex items-center gap-2"><BadgeCheck size={16} /> {appliedCoupon.code} applied.</p>
+                  <button type="button" onClick={clearCoupon} className="text-xs font-bold uppercase text-ink/60 hover:text-primary">Remove</button>
+                </div>
+              ) : null}
               <GoKwikCheckout amount={formatMoney(total)} />
               <div className="grid gap-2 text-xs leading-5 text-ink/60">
                 <p className="flex gap-2"><LockKeyhole size={15} className="mt-0.5 text-primary" /> 100% encrypted checkout.</p>

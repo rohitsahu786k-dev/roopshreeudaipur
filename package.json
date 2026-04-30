@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "seed:admin": "node scripts/seed-admin.js"
+    "seed:admin": "node scripts/seed-admin.js",
+    "seed:qa": "node scripts/seed-fake-products-reviews.js"
   },
   "dependencies": {
     "@paypal/react-paypal-js": "^8.8.3",
@@ -16,6 +17,8 @@
     "bcryptjs": "^3.0.3",
     "date-fns": "^4.1.0",
     "jsonwebtoken": "^9.0.2",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.7",
     "lucide-react": "^0.468.0",
     "mongoose": "^8.19.2",
     "next": "14.2.32",

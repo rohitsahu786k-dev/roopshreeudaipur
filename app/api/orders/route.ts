@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { CustomerActivity } from "@/models/CustomerActivity";
 import { Order } from "@/models/Order";
+import { calculateTax } from "@/lib/tax";
 
 export async function GET() {
   try {
@@ -35,12 +36,26 @@ export async function POST(request: NextRequest) {
     const user = await getCurrentUser();
     const orderNumber = payload.orderNumber ?? `RC-${Date.now()}`;
 
+    // Calculate Tax if not provided
+    const taxInfo = payload.taxBreakdown || calculateTax(
+      payload.total,
+      payload.billing.state,
+      payload.billing.country || "India"
+    );
+
     const order = await Order.create({
       ...payload,
       user: payload.user ?? user?.id,
       orderNumber,
       invoiceNumber: payload.invoiceNumber ?? `INV-${orderNumber}`,
-      invoiceGeneratedAt: new Date()
+      invoiceGeneratedAt: new Date(),
+      taxType: taxInfo.taxType,
+      taxBreakdown: {
+        cgst: taxInfo.cgst,
+        sgst: taxInfo.sgst,
+        igst: taxInfo.igst,
+        vat: taxInfo.vat
+      }
     });
 
     if (user) {

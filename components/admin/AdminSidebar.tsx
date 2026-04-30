@@ -65,6 +65,7 @@ const NAV: NavItem[] = [
     icon: Percent,
     children: [
       { label: "Discounts & Coupons", href: "/admin/discounts" },
+      { label: "Review Moderation", href: "/admin/reviews" },
       { label: "Upsell Rules", href: "/admin/upsell-rules" }
     ]
   },
@@ -122,7 +123,7 @@ export default function AdminSidebar({ onClose }: Props) {
     href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
 
   return (
-    <div className="flex h-full w-64 flex-col bg-[#1a1a2e] text-white">
+    <div className="flex h-full w-64 flex-col bg-black text-white">
       {/* Logo */}
       <div className="flex h-16 items-center justify-between border-b border-white/10 px-4">
         <Link href="/admin" className="flex items-center gap-2">

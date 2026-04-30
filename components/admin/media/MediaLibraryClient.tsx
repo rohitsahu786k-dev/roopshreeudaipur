@@ -36,6 +36,7 @@ export default function MediaLibraryClient() {
   const [addType, setAddType] = useState<"image" | "video" | "reel">("image");
   const [addAlt, setAddAlt] = useState("");
   const [adding, setAdding] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
 
   const fetchMedia = async () => {
     setLoading(true);
@@ -50,21 +51,30 @@ export default function MediaLibraryClient() {
   useEffect(() => { fetchMedia(); }, [typeFilter]);
 
   const addMedia = async () => {
-    if (!urlInput.trim()) return;
+    if (!urlInput.trim() && !file) return;
     setAdding(true);
-    await fetch("/api/admin/media", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        url: urlInput,
-        type: addType,
-        alt: addAlt,
-        filename: urlInput.split("/").pop() ?? "media",
-        folder: "general"
-      })
-    });
+    if (file) {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("alt", addAlt);
+      formData.append("folder", "general");
+      await fetch("/api/admin/media", { method: "POST", body: formData });
+    } else {
+      await fetch("/api/admin/media", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          url: urlInput,
+          type: addType,
+          alt: addAlt,
+          filename: urlInput.split("/").pop() ?? "media",
+          folder: "general"
+        })
+      });
+    }
     setUrlInput("");
     setAddAlt("");
+    setFile(null);
     setAdding(false);
     fetchMedia();
   };
@@ -111,7 +121,7 @@ export default function MediaLibraryClient() {
 
       {/* Add Media */}
       <div className="mb-6 rounded-xl border border-gray-200 bg-white p-4">
-        <h3 className="mb-3 text-sm font-semibold text-gray-900">Add Media by URL</h3>
+        <h3 className="mb-3 text-sm font-semibold text-gray-900">Upload Media or Add by URL</h3>
         <div className="flex flex-wrap gap-2 mb-3">
           {(["image", "video", "reel"] as const).map((type) => (
             <button
@@ -127,6 +137,12 @@ export default function MediaLibraryClient() {
         </div>
         <div className="flex gap-2">
           <input
+            type="file"
+            accept="image/*,video/*,application/pdf"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            className="w-56 rounded-lg border border-gray-200 px-3 py-2 text-sm"
+          />
+          <input
             value={urlInput}
             onChange={(e) => setUrlInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && addMedia()}
@@ -141,7 +157,7 @@ export default function MediaLibraryClient() {
           />
           <button
             onClick={addMedia}
-            disabled={adding || !urlInput}
+            disabled={adding || (!urlInput && !file)}
             className="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark disabled:opacity-50"
           >
             <Upload className="h-4 w-4" />

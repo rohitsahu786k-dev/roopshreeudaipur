@@ -10,12 +10,27 @@ type Coupon = {
   title: string;
   type: string;
   value: number;
+  maxDiscountAmount?: number;
   usedCount: number;
   usageLimit?: number;
+  usageLimitPerCustomer?: number;
   minimumOrderAmount?: number;
+  appliesToProducts?: string[];
+  excludedProducts?: string[];
+  appliesToCategories?: string[];
+  eligibleCustomers?: string[];
+  firstTimeUserOnly?: boolean;
+  stackable?: boolean;
+  autoApply?: boolean;
+  marketingTrigger?: string;
   startsAt?: string;
   endsAt?: string;
   isActive: boolean;
+  analytics?: {
+    totalUsage: number;
+    revenueGenerated: number;
+    failedAttempts: number;
+  };
 };
 
 const empty = (): Partial<Coupon> => ({
@@ -24,15 +39,28 @@ const empty = (): Partial<Coupon> => ({
   type: "percentage",
   value: 10,
   usedCount: 0,
-  isActive: true
+  usageLimitPerCustomer: 1,
+  isActive: true,
+  stackable: false,
+  autoApply: false,
+  marketingTrigger: "none"
 });
 
 const TYPE_LABELS: Record<string, string> = {
   percentage: "% Off",
   fixed_amount: "₹ Off",
   free_shipping: "Free Shipping",
+  product_specific: "Product Specific",
   buy_x_get_y: "Buy X Get Y"
 };
+
+function csvToList(value: string) {
+  return value.split(",").map((item) => item.trim()).filter(Boolean);
+}
+
+function listToCsv(value?: string[]) {
+  return value?.join(", ") ?? "";
+}
 
 export default function DiscountsClient() {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
@@ -175,6 +203,25 @@ export default function DiscountsClient() {
                   />
                 </div>
                 <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">Per User Limit</label>
+                  <input
+                    type="number"
+                    value={form.usageLimitPerCustomer ?? ""}
+                    onChange={(e) => setForm((f) => ({ ...f!, usageLimitPerCustomer: e.target.value ? Number(e.target.value) : undefined }))}
+                    placeholder="1"
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">Max Discount</label>
+                  <input
+                    type="number"
+                    value={form.maxDiscountAmount ?? ""}
+                    onChange={(e) => setForm((f) => ({ ...f!, maxDiscountAmount: e.target.value ? Number(e.target.value) : undefined }))}
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+                  />
+                </div>
+                <div>
                   <label className="mb-1 block text-sm font-medium text-gray-700">Starts At</label>
                   <input
                     type="datetime-local"
@@ -192,16 +239,61 @@ export default function DiscountsClient() {
                     className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm"
                   />
                 </div>
+                <div className="col-span-2">
+                  <label className="mb-1 block text-sm font-medium text-gray-700">Applicable Products</label>
+                  <input
+                    value={listToCsv(form.appliesToProducts)}
+                    onChange={(e) => setForm((f) => ({ ...f!, appliesToProducts: csvToList(e.target.value) }))}
+                    placeholder="product-slug, product-id"
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <label className="mb-1 block text-sm font-medium text-gray-700">Excluded Products</label>
+                  <input
+                    value={listToCsv(form.excludedProducts)}
+                    onChange={(e) => setForm((f) => ({ ...f!, excludedProducts: csvToList(e.target.value) }))}
+                    placeholder="product-slug, product-id"
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <label className="mb-1 block text-sm font-medium text-gray-700">Applicable Categories</label>
+                  <input
+                    value={listToCsv(form.appliesToCategories)}
+                    onChange={(e) => setForm((f) => ({ ...f!, appliesToCategories: csvToList(e.target.value) }))}
+                    placeholder="saree, lehenga"
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <label className="mb-1 block text-sm font-medium text-gray-700">Eligible Users</label>
+                  <input
+                    value={listToCsv(form.eligibleCustomers)}
+                    onChange={(e) => setForm((f) => ({ ...f!, eligibleCustomers: csvToList(e.target.value) }))}
+                    placeholder="user-id, user-id"
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+                  />
+                </div>
               </div>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={form.isActive}
-                  onChange={(e) => setForm((f) => ({ ...f!, isActive: e.target.checked }))}
-                  className="rounded border-gray-300 text-primary"
-                />
-                <span className="text-sm text-gray-700">Active</span>
-              </label>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {[
+                  ["isActive", "Active"],
+                  ["firstTimeUserOnly", "First-time user only"],
+                  ["stackable", "Stackable"],
+                  ["autoApply", "Auto apply"]
+                ].map(([key, label]) => (
+                  <label key={key} className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(form[key as keyof Coupon])}
+                      onChange={(e) => setForm((f) => ({ ...f!, [key]: e.target.checked }))}
+                      className="rounded border-gray-300 text-primary"
+                    />
+                    <span className="text-sm text-gray-700">{label}</span>
+                  </label>
+                ))}
+              </div>
             </div>
 
             <div className="mt-6 flex justify-end gap-3">
@@ -250,7 +342,8 @@ export default function DiscountsClient() {
                     {c.type === "percentage" ? `${c.value}%` : c.type === "fixed_amount" ? `₹${c.value}` : "—"}
                   </td>
                   <td className="px-4 py-3 text-gray-500">
-                    {c.usedCount}{c.usageLimit ? `/${c.usageLimit}` : ""}
+                    {c.analytics?.totalUsage ?? c.usedCount}{c.usageLimit ? `/${c.usageLimit}` : ""}
+                    {c.analytics ? <div className="text-[11px]">Failed {c.analytics.failedAttempts}</div> : null}
                   </td>
                   <td className="px-4 py-3 text-gray-500 whitespace-nowrap text-xs">
                     {c.endsAt ? format(new Date(c.endsAt), "dd MMM yyyy") : "Never"}

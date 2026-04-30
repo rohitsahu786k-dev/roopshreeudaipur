@@ -61,6 +61,30 @@ const storeSettingSchema = new mongoose.Schema(
       suggestedCoupons: [{ type: String }],
       giftWrapThreshold: { type: Number, default: 12000 }
     },
+    featureToggles: {
+      homepageReels: { type: Boolean, default: true },
+      instagramGrid: { type: Boolean, default: true },
+      pdpFloatingReel: { type: Boolean, default: true },
+      mobileBottomNav: { type: Boolean, default: true },
+      backendFilters: { type: Boolean, default: true }
+    },
+    reels: [
+      {
+        title: String,
+        url: String,
+        product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+        isActive: { type: Boolean, default: true },
+        sortOrder: { type: Number, default: 0 }
+      }
+    ],
+    instagramPosts: [
+      {
+        url: String,
+        image: String,
+        caption: String,
+        sortOrder: { type: Number, default: 0 }
+      }
+    ],
     shippingZones: [shippingZoneSchema]
   },
   { timestamps: true }

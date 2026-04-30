@@ -24,6 +24,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
     }
 
+    if (!user.emailVerified) {
+      return NextResponse.json({ 
+        error: "Email not verified", 
+        requiresVerification: true,
+        email: user.email 
+      }, { status: 403 });
+    }
+
     const token = signAuthToken(user);
     setAuthCookie(token);
 

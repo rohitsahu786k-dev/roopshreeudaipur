@@ -77,6 +77,13 @@ const orderSchema = new mongoose.Schema(
     invoiceNumber: String,
     invoiceUrl: String,
     invoiceGeneratedAt: Date,
+    taxType: { type: String, enum: ["GST", "IGST", "VAT", "OTHER"], default: "GST" },
+    taxBreakdown: {
+      cgst: { type: Number, default: 0 },
+      sgst: { type: Number, default: 0 },
+      igst: { type: Number, default: 0 },
+      vat: { type: Number, default: 0 }
+    },
     gokwikOrderId: String,
     isGokwikOrder: { type: Boolean, default: false },
     notes: String

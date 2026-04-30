@@ -78,7 +78,7 @@ export default function BlogsPage() {
         {/* Blog Grid */}
         <div>
           <h3 className="mb-8 text-lg font-bold uppercase tracking-wide">More Stories</h3>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {blogs.slice(1).map((blog) => (
               <BlogCard key={blog.id} blog={blog} />
             ))}

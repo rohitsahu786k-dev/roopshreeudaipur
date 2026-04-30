@@ -3,10 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { SlidersHorizontal, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ProductCard } from "@/components/ProductCard";
 import { useCommerce } from "@/components/providers/CommerceProvider";
 import { categories, products, type Product } from "@/lib/catalog";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 type FilterGroup = {
   title: string;
@@ -23,6 +24,16 @@ const filterGroups: FilterGroup[] = [
 ];
 
 const designers = ["URMIL", "NUPUR KANOI", "AMIT AGGARWAL", "BANNHI BY PRIYANKA", "SIMAR DUGAL", "TWENTY NINE"];
+
+type ApiFilter = {
+  name: string;
+  slug: string;
+  inputType: "checkbox" | "radio" | "range" | "color" | "size";
+  filterLogic: "or" | "and";
+  values: { label: string; value: string; count: number; colorHex?: string }[];
+  min?: number;
+  max?: number;
+};
 
 function enrichProducts() {
   return Array.from({ length: 4 })
@@ -62,11 +73,55 @@ export function ShopClient() {
   const [sort, setSort] = useState("popular");
   const [maxPrice, setMaxPrice] = useState(350000);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [apiProducts, setApiProducts] = useState<Product[]>([]);
+  const [apiFilters, setApiFilters] = useState<ApiFilter[]>([]);
+  const [loading, setLoading] = useState(false);
   const { formatMoney } = useCommerce();
   const allProducts = useMemo(() => enrichProducts(), []);
 
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (query) params.set("q", query);
+    params.set("maxPrice", String(maxPrice));
+    selected.forEach((value) => {
+      const category = categories.find((item) => item.label === value);
+      if (category) params.set("category", category.slug);
+      else params.append(value.toLowerCase().replace(/\s+/g, "-"), value);
+    });
+
+    window.history.replaceState(null, "", `/shop?${params.toString()}`);
+    setLoading(true);
+    fetch(`/api/products?${params.toString()}`, { cache: "no-store" })
+      .then((response) => response.json())
+      .then((data) => {
+        setApiProducts((data.products ?? []).map((item: any) => ({
+          name: item.name,
+          slug: item.slug,
+          category: typeof item.category === "string" ? item.category : "saree",
+          shortDescription: item.shortDescription ?? item.shortDescription ?? "",
+          description: item.description ?? "",
+          image: item.image ?? item.media?.[0]?.url ?? item.images?.[0] ?? "/logo.jpg",
+          gallery: item.gallery ?? item.images ?? item.media?.map((media: any) => media.url) ?? [item.image ?? "/logo.jpg"],
+          price: item.price ?? item.basePrice ?? 0,
+          comparePrice: item.comparePrice ?? item.basePrice ?? 0,
+          rating: item.rating ?? item.ratings?.average ?? 0,
+          reviewCount: item.reviewCount ?? item.ratings?.count ?? 0,
+          fabric: item.fabric ?? "",
+          occasion: item.occasion ?? [],
+          workType: item.workType ?? "",
+          washCare: item.washCare ?? "",
+          colors: item.colors ?? item.options?.find((option: any) => option.name?.toLowerCase() === "color")?.values?.map((name: string) => ({ name, hex: "#cccccc" })) ?? [],
+          sizes: item.sizes ?? item.options?.find((option: any) => option.name?.toLowerCase() === "size")?.values ?? ["Free Size"],
+          videoUrl: item.videoUrl ?? item.productVideoUrl
+        })));
+        setApiFilters(data.filters ?? []);
+      })
+      .finally(() => setLoading(false));
+  }, [maxPrice, query, selected]);
+
   const filteredProducts = useMemo(() => {
-    const result = allProducts.filter((product) => productMatches(product, selected, query, maxPrice));
+    const source = apiProducts.length ? apiProducts : allProducts;
+    const result = source.filter((product) => productMatches({ ...product, displayDesigner: "" }, selected, query, maxPrice));
 
     if (sort === "price-low") return [...result].sort((a, b) => a.price - b.price);
     if (sort === "price-high") return [...result].sort((a, b) => b.price - a.price);
@@ -83,12 +138,16 @@ export function ShopClient() {
     });
   }
 
+  const dynamicFilters = apiFilters.length
+    ? apiFilters.filter((filter) => filter.slug !== "price").map((filter) => ({ title: filter.name, values: filter.values.map((value) => `${value.label} (${value.count})`) }))
+    : filterGroups;
+
   const sidebar = (
     <aside className="h-fit bg-[#f7f7f7] pr-4 text-xs lg:sticky lg:top-28">
       <label className="mb-5 flex items-center gap-2 font-semibold">
         <input type="checkbox" className="accent-primary" /> Ready To Ship ({filteredProducts.length})
       </label>
-      {filterGroups.map((group) => (
+      {dynamicFilters.map((group) => (
         <section key={group.title} className="border-b border-black/10 py-4">
           <h2 className="font-bold uppercase tracking-wide">{group.title}</h2>
           <input
@@ -99,8 +158,8 @@ export function ShopClient() {
           <div className="mt-3 max-h-40 space-y-2 overflow-y-auto pr-1">
             {group.values.map((value, index) => (
               <label key={value} className="flex items-center gap-2 text-[11px] text-ink/75">
-                <input checked={selected.has(value)} onChange={() => toggleFilter(value)} type="checkbox" className="accent-primary" />
-                <span>{value} ({Math.max(45, 18240 - index * 831)})</span>
+                <input checked={selected.has(value.replace(/\s\(\d+\)$/, ""))} onChange={() => toggleFilter(value.replace(/\s\(\d+\)$/, ""))} type="checkbox" className="accent-primary" />
+                <span>{value}</span>
               </label>
             ))}
           </div>
@@ -153,7 +212,7 @@ export function ShopClient() {
             <div className="mt-5 flex flex-col gap-3 border-b border-black/20 pb-3 md:flex-row md:items-center md:justify-between">
               <div>
                 <p className="text-xs text-ink/45">Home &gt; Womenswear</p>
-                <h1 className="mt-2 text-base font-bold uppercase tracking-wide">Womenswear <span className="font-normal text-ink/55">({filteredProducts.length} products)</span></h1>
+                <h1 className="mt-2 text-base font-bold uppercase tracking-wide">Womenswear <span className="font-normal text-ink/55">({loading ? "Loading" : `${filteredProducts.length} products`})</span></h1>
               </div>
               <div className="flex gap-2">
                 <button type="button" className="focus-ring flex items-center gap-2 border border-black/15 bg-white px-3 py-2 text-xs font-bold uppercase lg:hidden" onClick={() => setMobileFiltersOpen(true)}>
@@ -168,23 +227,35 @@ export function ShopClient() {
               </div>
             </div>
 
-            <div className="mt-6 grid grid-cols-2 gap-x-8 gap-y-10 md:grid-cols-3 xl:grid-cols-4">
-              {filteredProducts.map((product, index) => (
-                <div key={`${product.slug}-${index}`}>
-                  <ProductCard product={product} />
-                  <p className="mt-2 inline-flex border border-black/20 px-2 py-1 text-[10px] font-bold uppercase text-ink/60">{product.shippingLabel}</p>
-                </div>
-              ))}
-            </div>
-
-            {!filteredProducts.length ? (
-              <div className="my-16 bg-white p-10 text-center">
-                <p className="font-bold uppercase">No products found</p>
-                <button type="button" className="mt-4 bg-ink px-5 py-2 text-xs font-bold uppercase text-white" onClick={() => setSelected(new Set())}>
-                  Clear Filters
+            {loading ? (
+              <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+                {[...Array(8)].map((_, i) => (
+                  <div key={i} className="space-y-3">
+                    <Skeleton className="aspect-[3/4] w-full rounded-none" />
+                    <Skeleton className="h-4 w-2/3" />
+                    <Skeleton className="h-3 w-1/3" />
+                  </div>
+                ))}
+              </div>
+            ) : filteredProducts.length === 0 ? (
+              <div className="flex h-64 flex-col items-center justify-center text-center">
+                <p className="text-lg font-bold text-ink">No products found</p>
+                <p className="text-sm text-ink/60">Try adjusting your filters or search query.</p>
+                <button
+                  type="button"
+                  onClick={() => { setSelected(new Set()); setQuery(""); setMaxPrice(350000); }}
+                  className="mt-4 text-sm font-bold uppercase tracking-wide text-primary underline"
+                >
+                  Clear all filters
                 </button>
               </div>
-            ) : null}
+            ) : (
+              <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+                {filteredProducts.map((product) => (
+                  <ProductCard key={product.slug} product={product} />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

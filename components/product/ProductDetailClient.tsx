@@ -8,6 +8,7 @@ import { useMemo, useState } from "react";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductMediaPlayer } from "@/components/product/ProductMediaPlayer";
 import { ProductReviews } from "@/components/product/ProductReviews";
+import { ProductVideoPopup } from "@/components/product/ProductVideoPopup";
 import { SizeGuidePopup } from "@/components/product/SizeGuidePopup";
 import { useCommerce } from "@/components/providers/CommerceProvider";
 import type { Product } from "@/lib/catalog";
@@ -338,6 +339,25 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
       </div>
 
       <SizeGuidePopup open={sizeGuideOpen} onClose={() => setSizeGuideOpen(false)} notes={product.sizeGuideNotes} />
+      <ProductVideoPopup url={product.videoUrl} />
+      <div className="fixed inset-x-0 bottom-[64px] z-40 border-t border-black/10 bg-white p-3 shadow-[0_-8px_20px_rgba(0,0,0,0.08)] md:hidden">
+        <div className="flex items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-xs font-bold uppercase">{product.name}</p>
+            <p className="text-sm font-bold text-primary">{formatMoney(product.price)}</p>
+          </div>
+          <button
+            type="button"
+            className="focus-ring bg-ink px-4 py-3 text-xs font-bold uppercase text-white"
+            onClick={() => {
+              addToCart(product, { size: selectedSize, color: selectedColor });
+              setCartOpen(true);
+            }}
+          >
+            Add To Bag
+          </button>
+        </div>
+      </div>
     </section>
   );
 }

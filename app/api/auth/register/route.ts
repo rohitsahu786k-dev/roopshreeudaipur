@@ -20,19 +20,28 @@ export async function POST(request: NextRequest) {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await User.create({ name, email, phone, password: hashedPassword });
-    const token = signAuthToken(user);
-    setAuthCookie(token);
+    
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    const user = await User.create({ 
+      name, 
+      email, 
+      phone, 
+      password: hashedPassword,
+      verificationOtp: otp,
+      verificationOtpExpires: otpExpires,
+      emailVerified: false
+    });
+
+    // In a real app, you'd send an email here
+    console.log(`Verification OTP for ${email}: ${otp}`);
 
     return NextResponse.json({
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role
-      },
-      token
-    });
+      message: "Registration successful. Please verify your email.",
+      email: user.email
+    }, { status: 201 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to register";
     return NextResponse.json({ error: message }, { status: 500 });

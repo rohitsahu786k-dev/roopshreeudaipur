@@ -180,6 +180,8 @@ const productSchema = new mongoose.Schema(
 );
 
 productSchema.index({ slug: 1 });
+productSchema.index({ sku: 1 }, { unique: true, sparse: true });
+productSchema.index({ "variants.sku": 1 }, { unique: true, sparse: true });
 productSchema.index({ status: 1, isActive: 1 });
 productSchema.index({ category: 1 });
 productSchema.index({ tags: 1 });

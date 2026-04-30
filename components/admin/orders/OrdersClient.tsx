@@ -8,9 +8,14 @@ import {
   ChevronLeft,
   ChevronRight,
   ExternalLink,
-  Filter
+  Filter,
+  FileDown,
+  Printer,
+  Mail
 } from "lucide-react";
 import { format } from "date-fns";
+import { generateInvoicePDF, generateThermalInvoice } from "@/lib/invoice-client";
+import toast from "react-hot-toast";
 
 type Order = {
   _id: string;
@@ -53,6 +58,58 @@ export default function OrdersClient() {
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({ total: 0, pages: 1 });
   const [stats, setStats] = useState<any>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  const fetchFullOrder = async (id: string) => {
+    const res = await fetch(`/api/admin/orders/${id}`);
+    if (!res.ok) throw new Error("Failed to fetch order");
+    return res.json();
+  };
+
+  const handleDownloadInvoice = async (orderId: string) => {
+    setActionLoading(orderId + "-pdf");
+    try {
+      const order = await fetchFullOrder(orderId);
+      const settingsRes = await fetch("/api/admin/settings");
+      const settings = await settingsRes.json();
+      await generateInvoicePDF(order, settings);
+      toast.success("Invoice generated");
+    } catch (err) {
+      toast.error("Failed to generate invoice");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handlePrintThermal = async (orderId: string) => {
+    setActionLoading(orderId + "-thermal");
+    try {
+      const order = await fetchFullOrder(orderId);
+      const settingsRes = await fetch("/api/admin/settings");
+      const settings = await settingsRes.json();
+      generateThermalInvoice(order, settings);
+    } catch (err) {
+      toast.error("Failed to prepare print");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleSendEmail = async (orderId: string) => {
+    setActionLoading(orderId + "-email");
+    try {
+      const res = await fetch(`/api/admin/orders/${orderId}/send-invoice`, { method: "POST" });
+      if (res.ok) {
+        toast.success("Invoice sent via email");
+      } else {
+        throw new Error();
+      }
+    } catch (err) {
+      toast.error("Failed to send invoice");
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
@@ -202,13 +259,39 @@ export default function OrdersClient() {
                           {order.orderStatus.replace(/_/g, " ")}
                         </span>
                       </td>
-                      <td className="px-4 py-3">
-                        <Link
-                          href={`/admin/orders/${order._id}`}
-                          className="rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 inline-flex"
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                        </Link>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => handleDownloadInvoice(order._id)}
+                            disabled={!!actionLoading}
+                            title="Download A4 Invoice"
+                            className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-primary transition-colors disabled:opacity-50"
+                          >
+                            <FileDown size={16} />
+                          </button>
+                          <button
+                            onClick={() => handlePrintThermal(order._id)}
+                            disabled={!!actionLoading}
+                            title="Print Thermal Invoice"
+                            className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-primary transition-colors disabled:opacity-50"
+                          >
+                            <Printer size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleSendEmail(order._id)}
+                            disabled={!!actionLoading}
+                            title="Resend Invoice Email"
+                            className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-primary transition-colors disabled:opacity-50"
+                          >
+                            <Mail size={16} />
+                          </button>
+                          <Link
+                            href={`/admin/orders/${order._id}`}
+                            className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-primary transition-colors"
+                          >
+                            <ExternalLink size={16} />
+                          </Link>
+                        </div>
                       </td>
                     </tr>
                   ))}

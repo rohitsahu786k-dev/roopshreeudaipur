@@ -2,10 +2,11 @@ export type Coupon = {
   code: string;
   title: string;
   description: string;
-  discountType: "percent" | "fixed" | "free_shipping";
+  discountType: "percent" | "fixed" | "free_shipping" | "product_specific";
   value: number;
   minSpend: number;
   badge: string;
+  maxDiscountAmount?: number;
 };
 
 export const coupons: Coupon[] = [
@@ -54,6 +55,7 @@ export function getCouponDiscount(code: string, subtotal: number) {
     return { coupon, discount: 0 };
   }
 
-  const discount = coupon.discountType === "percent" ? Math.round((subtotal * coupon.value) / 100) : coupon.value;
-  return { coupon, discount: Math.min(discount, subtotal) };
+  const rawDiscount = coupon.discountType === "percent" ? Math.round((subtotal * coupon.value) / 100) : coupon.discountType === "fixed" ? coupon.value : 0;
+  const cappedDiscount = coupon.maxDiscountAmount ? Math.min(rawDiscount, coupon.maxDiscountAmount) : rawDiscount;
+  return { coupon, discount: Math.min(cappedDiscount, subtotal) };
 }

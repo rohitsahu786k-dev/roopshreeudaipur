@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { BadgeCheck, Minus, Plus, ShoppingBag, Tag, Trash2, X } from "lucide-react";
+import { BadgeCheck, Heart, Minus, Plus, ShoppingBag, Tag, Trash2, X } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { products } from "@/lib/catalog";
 import { useCommerce } from "@/components/providers/CommerceProvider";
 
@@ -14,19 +15,33 @@ type SideCartProps = {
 export function SideCart({ open, onClose }: SideCartProps) {
   const {
     cartItems,
+    cartLoading,
+    cartMessage,
     subtotal,
     discount,
+    shipping,
     total,
     formatMoney,
     availableCoupons,
     applyCoupon,
     appliedCoupon,
+    clearCoupon,
     removeFromCart,
     updateQty
   } = useCommerce();
   const upsells = products.slice(2, 5);
   const freeShipThreshold = 2999;
   const remaining = Math.max(0, freeShipThreshold - subtotal);
+  const touchStartX = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [open]);
 
   return (
     <div className={`fixed inset-0 z-[100] ${open ? "" : "pointer-events-none"}`} aria-hidden={!open}>
@@ -37,10 +52,19 @@ export function SideCart({ open, onClose }: SideCartProps) {
         onClick={onClose}
       />
       <aside
-        className={`fixed right-0 top-0 flex h-screen w-full max-w-md flex-col overflow-hidden bg-white shadow-2xl transition-transform duration-300 ${
+        className={`fixed right-0 top-0 flex h-[100svh] w-full max-w-md flex-col overflow-hidden bg-white shadow-2xl transition-transform duration-300 ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
         aria-label="Shopping cart"
+        onTouchStart={(event) => {
+          touchStartX.current = event.touches[0]?.clientX ?? null;
+        }}
+        onTouchEnd={(event) => {
+          const start = touchStartX.current;
+          const end = event.changedTouches[0]?.clientX;
+          if (start !== null && end - start > 80) onClose();
+          touchStartX.current = null;
+        }}
       >
         <div className="shrink-0 border-b border-black/10 px-5 py-4">
           <div className="flex items-center justify-between">
@@ -54,8 +78,14 @@ export function SideCart({ open, onClose }: SideCartProps) {
           </div>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4">
+        <div className="scroll-touch min-h-0 flex-1 px-4 py-4">
           <div className="space-y-4">
+            {cartLoading ? (
+              <div className="border border-black/10 bg-white p-4 text-sm font-semibold text-ink/60">Loading cart...</div>
+            ) : null}
+            {cartMessage ? (
+              <div className="border border-primary/30 bg-primary/5 p-3 text-xs font-semibold text-primary">{cartMessage}</div>
+            ) : null}
             <div className="border border-black/10 bg-neutral p-3">
               <p className="text-xs font-bold uppercase tracking-wide">
                 {remaining > 0 ? `Shop ${formatMoney(remaining)} more for free India shipping` : "Free India shipping unlocked"}
@@ -64,22 +94,35 @@ export function SideCart({ open, onClose }: SideCartProps) {
                 <div className="h-full bg-primary" style={{ width: `${Math.min(100, (subtotal / freeShipThreshold) * 100)}%` }} />
               </div>
             </div>
+            {!cartLoading && cartItems.length === 0 ? (
+              <div className="grid place-items-center border border-black/10 bg-white px-5 py-12 text-center">
+                <Heart className="text-primary" size={32} />
+                <p className="mt-3 font-bold uppercase">Your cart is empty</p>
+                <p className="mt-2 text-sm text-ink/60">Add a saved style or continue shopping to start checkout.</p>
+                <Link href="/shop" className="focus-ring mt-5 bg-ink px-5 py-3 text-xs font-bold uppercase text-white" onClick={onClose}>
+                  Continue shopping
+                </Link>
+              </div>
+            ) : null}
             {cartItems.map((item) => (
-              <article key={item.product.slug} className="grid grid-cols-[78px_1fr] gap-3 border-b border-black/10 pb-4 last:border-b-0">
+              <article key={item.variant_id} className="grid grid-cols-[78px_1fr] gap-3 border-b border-black/10 pb-4 last:border-b-0">
                 <div className="relative h-[104px] overflow-hidden bg-neutral">
-                  <Image src={item.product.image} alt={item.product.name} fill className="object-cover" sizes="92px" />
+                  <Image src={item.image} alt={item.name} fill className="object-cover" sizes="92px" />
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <h3 className="line-clamp-2 text-sm font-semibold uppercase leading-5">{item.product.name}</h3>
+                      <h3 className="line-clamp-2 text-sm font-semibold uppercase leading-5">{item.name}</h3>
                       <p className="mt-1 text-xs text-ink/55">Size {item.size} / {item.color}</p>
+                      <p className={`mt-1 text-[11px] font-bold uppercase ${item.stock_status === "in_stock" ? "text-primary" : "text-red-700"}`}>
+                        {item.stock_status.replace(/_/g, " ")}
+                      </p>
                     </div>
                     <button
                       type="button"
                       className="focus-ring rounded p-1 text-ink/45 hover:text-primary"
-                      aria-label={`Remove ${item.product.name}`}
-                      onClick={() => removeFromCart(item.product.slug)}
+                      aria-label={`Remove ${item.name}`}
+                      onClick={() => removeFromCart(item.variant_id)}
                     >
                       <Trash2 size={16} />
                     </button>
@@ -90,21 +133,22 @@ export function SideCart({ open, onClose }: SideCartProps) {
                         type="button"
                         className="grid h-7 w-7 place-items-center hover:bg-neutral"
                         aria-label="Decrease quantity"
-                        onClick={() => updateQty(item.product.slug, item.qty - 1)}
+                        onClick={() => updateQty(item.variant_id, item.quantity - 1)}
                       >
                         <Minus size={14} />
                       </button>
-                      <span className="grid h-7 w-8 place-items-center text-sm font-semibold">{item.qty}</span>
+                      <span className="grid h-7 w-8 place-items-center text-sm font-semibold">{item.quantity}</span>
                       <button
                         type="button"
                         className="grid h-7 w-7 place-items-center hover:bg-neutral"
                         aria-label="Increase quantity"
-                        onClick={() => updateQty(item.product.slug, item.qty + 1)}
+                        disabled={item.quantity >= item.available_stock}
+                        onClick={() => updateQty(item.variant_id, item.quantity + 1)}
                       >
                         <Plus size={14} />
                       </button>
                     </div>
-                    <p className="shrink-0 text-sm font-bold">{formatMoney(item.product.price * item.qty)}</p>
+                    <p className="shrink-0 text-sm font-bold">{formatMoney(item.subtotal)}</p>
                   </div>
                 </div>
               </article>
@@ -126,7 +170,12 @@ export function SideCart({ open, onClose }: SideCartProps) {
                 </button>
               ))}
             </div>
-            {appliedCoupon ? <p className="mt-2 flex items-center gap-1 text-xs font-semibold text-primary"><BadgeCheck size={14} /> {appliedCoupon.code} applied</p> : null}
+            {appliedCoupon ? (
+              <div className="mt-2 flex items-center justify-between gap-2 text-xs font-semibold text-primary">
+                <p className="flex items-center gap-1"><BadgeCheck size={14} /> {appliedCoupon.code} applied</p>
+                <button type="button" onClick={clearCoupon} className="font-bold uppercase text-ink/60 hover:text-primary">Remove</button>
+              </div>
+            ) : null}
           </div>
 
           <div className="mt-5">
@@ -159,7 +208,7 @@ export function SideCart({ open, onClose }: SideCartProps) {
             ) : null}
             <div className="flex justify-between text-ink/60">
               <span>Shipping</span>
-              <span>Calculated at checkout</span>
+              <span>{shipping > 0 ? formatMoney(shipping) : "Free"}</span>
             </div>
             <div className="flex justify-between border-t border-black/10 pt-2 font-bold">
               <span>Total</span>
