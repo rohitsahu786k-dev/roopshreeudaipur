@@ -1,10 +1,10 @@
 "use client";
 
 import { format } from "date-fns";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
 
 export async function generateInvoicePDF(order: any, storeSettings: any) {
+  // Use global jspdf from CDN
+  const { jsPDF } = (window as any).jspdf;
   const doc = new jsPDF();
   const margin = 20;
   let currentY = margin;
@@ -71,7 +71,7 @@ export async function generateInvoicePDF(order: any, storeSettings: any) {
     `INR ${(item.qty * item.price).toLocaleString()}`
   ]);
 
-  autoTable(doc, {
+  (doc as any).autoTable({
     startY: currentY,
     head: [["Product", "Variant", "Qty", "Price", "Amount"]],
     body: tableData,

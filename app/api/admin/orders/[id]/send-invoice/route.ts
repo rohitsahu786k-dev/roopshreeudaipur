@@ -14,6 +14,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     await connectToDatabase();
     const order = await Order.findById(params.id);
     if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    if (!order.billing) return NextResponse.json({ error: "Order billing info missing" }, { status: 400 });
 
     // In a real app, you'd generate the PDF buffer here and attach it
     // For now, we'll send a confirmation email that includes a link to the invoice

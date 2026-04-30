@@ -11,10 +11,12 @@ import {
   Filter,
   FileDown,
   Printer,
-  Mail
+  Mail,
+  Box
 } from "lucide-react";
 import { format } from "date-fns";
 import { generateInvoicePDF, generateThermalInvoice } from "@/lib/invoice-client";
+import { generatePackagingSlipPDF } from "@/lib/packaging-slip-client";
 import toast from "react-hot-toast";
 
 type Order = {
@@ -76,6 +78,21 @@ export default function OrdersClient() {
       toast.success("Invoice generated");
     } catch (err) {
       toast.error("Failed to generate invoice");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleDownloadPackagingSlip = async (orderId: string) => {
+    setActionLoading(orderId + "-pkg");
+    try {
+      const order = await fetchFullOrder(orderId);
+      const settingsRes = await fetch("/api/admin/settings");
+      const settings = await settingsRes.json();
+      await generatePackagingSlipPDF(order, settings);
+      toast.success("Packaging slip generated");
+    } catch (err) {
+      toast.error("Failed to generate packaging slip");
     } finally {
       setActionLoading(null);
     }
@@ -268,6 +285,14 @@ export default function OrdersClient() {
                             className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-primary transition-colors disabled:opacity-50"
                           >
                             <FileDown size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDownloadPackagingSlip(order._id)}
+                            disabled={!!actionLoading}
+                            title="Download Packaging Slip"
+                            className="p-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-primary transition-colors disabled:opacity-50"
+                          >
+                            <Box size={16} />
                           </button>
                           <button
                             onClick={() => handlePrintThermal(order._id)}
