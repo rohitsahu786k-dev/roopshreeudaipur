@@ -10,19 +10,19 @@ const config: Config = {
       },
       colors: {
         primary: {
-          DEFAULT: "#7B1E38", // Deep Maroon
-          dark: "#5A1226"
+          DEFAULT: "#7B1E38", // Maroon
+          dark: "#000000" // Black
         },
         secondary: {
-          DEFAULT: "#D4AF37" // Elegant Gold
+          DEFAULT: "#000000" // Black
         },
         accent: {
-          DEFAULT: "#FDFBF7" // Cream/Off-white
+          DEFAULT: "#7B1E38" // Maroon
         },
         neutral: {
-          DEFAULT: "#F9F6F0" // Light Beige
+          DEFAULT: "#F8F8F8" // Light Gray
         },
-        ink: "#2C2C2C" // Soft Black for text
+        ink: "#000000" // Black
       },
       boxShadow: {
         soft: "0 18px 50px rgba(35, 31, 32, 0.10)"

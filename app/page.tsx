@@ -11,7 +11,7 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { Product as ProductModel } from "@/models/Product";
 import { Blog as BlogModel } from "@/models/Blog";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 const imageFor = (id: string, width = 900) => `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${width}&q=84`;
 
