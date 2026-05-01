@@ -18,6 +18,8 @@ import { Product } from "@/models/Product";
 import { Order } from "@/models/Order";
 import { User } from "@/models/User";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = { title: "Dashboard — Admin" };
 
 export default async function AdminPage() {

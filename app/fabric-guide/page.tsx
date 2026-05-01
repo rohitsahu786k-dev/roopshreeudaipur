@@ -6,13 +6,20 @@ const fabrics = [
 ];
 
 import type { Metadata } from "next";
+import { StorefrontPageRenderer } from "@/components/content/StorefrontPageRenderer";
+import { getPublishedPage } from "@/lib/storefrontPages";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Fabric Guide | Roop Shree",
   description: "Learn about different fabrics used in ethnic wear, their characteristics, and care instructions."
 };
 
-export default function FabricGuidePage() {
+export default async function FabricGuidePage() {
+  const backendPage = await getPublishedPage("fabric-guide");
+  if (backendPage) return <StorefrontPageRenderer page={backendPage} />;
+
   return (
     <section className="mx-auto max-w-5xl px-4 py-12">
       <h1 className="font-serif text-5xl font-bold">Fabric guide</h1>

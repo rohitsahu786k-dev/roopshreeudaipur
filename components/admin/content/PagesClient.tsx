@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Check, Edit, FileText, Plus, Trash2, X } from "lucide-react";
+import { RichTextEditor } from "@/components/admin/content/RichTextEditor";
 
 type PageItem = {
   _id: string;
@@ -10,6 +11,7 @@ type PageItem = {
   status: "draft" | "published" | "archived";
   pageType: string;
   excerpt?: string;
+  sections?: { type: string; title?: string; body?: string; position?: number; isActive?: boolean }[];
   seo?: { title?: string; description?: string; keywords?: string[]; schemaType?: string };
 };
 
@@ -19,6 +21,7 @@ const emptyPage = (): Partial<PageItem> => ({
   status: "draft",
   pageType: "standard",
   excerpt: "",
+  sections: [{ type: "rich_text", title: "", body: "", position: 0, isActive: true }],
   seo: {
     title: "",
     description: "",
@@ -121,6 +124,14 @@ export default function PagesClient() {
               <label className="md:col-span-2">
                 <span className="mb-1 block text-sm font-medium text-gray-700">Page Summary</span>
                 <textarea value={form.excerpt ?? ""} onChange={(e) => setForm((p) => ({ ...p!, excerpt: e.target.value }))} rows={3} className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm" />
+              </label>
+              <label className="md:col-span-2">
+                <span className="mb-1 block text-sm font-medium text-gray-700">Page Content</span>
+                <RichTextEditor
+                  value={form.sections?.[0]?.body ?? ""}
+                  onChange={(body) => setForm((p) => ({ ...p!, sections: [{ ...(p!.sections?.[0] ?? { type: "rich_text", position: 0, isActive: true }), body }] }))}
+                  placeholder="Build your page content with headings, images, links and lists..."
+                />
               </label>
               <label className="md:col-span-2">
                 <span className="mb-1 block text-sm font-medium text-gray-700">SEO Title</span>

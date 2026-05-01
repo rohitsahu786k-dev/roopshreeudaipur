@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { BadgeCheck, ChevronDown, Heart, LocateFixed, PackageCheck, Play, RotateCcw, ShieldCheck, ShoppingBag, Star, Truck, Zap } from "lucide-react";
+import { BadgeCheck, ChevronDown, Heart, LocateFixed, PackageCheck, Play, RotateCcw, ShieldCheck, ShoppingBag, Star, Truck, Zap, MessageCircle } from "lucide-react";
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
 import { ProductCard } from "@/components/ProductCard";
@@ -134,6 +134,15 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
               >
                 <Heart size={20} fill={isWishlisted(product.slug) ? "currentColor" : "none"} />
               </button>
+              <a
+                href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`Check out ${product.name} at Roop Shree: ${typeof window !== "undefined" ? window.location.href : ""}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="absolute right-4 top-16 grid h-10 w-10 place-items-center rounded-full bg-[#25D366] shadow text-white hover:bg-[#128C7E] transition-colors"
+                aria-label="Share on WhatsApp"
+              >
+                <MessageCircle size={20} />
+              </a>
               <div className="absolute left-4 top-4 bg-white/90 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-primary">Roop Shree Pick</div>
             </div>
           </div>

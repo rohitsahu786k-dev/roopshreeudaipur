@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { products, type Product as StaticProduct } from "@/lib/catalog";
 import { connectToDatabase } from "@/lib/mongodb";
 import { CatalogAttribute } from "@/models/CatalogAttribute";
+import { Category } from "@/models/Category";
 import { Product } from "@/models/Product";
 
 function valuesFor(params: URLSearchParams, key: string) {
@@ -28,6 +29,14 @@ function staticMatches(product: StaticProduct, params: URLSearchParams) {
   if (fabric.length && !fabric.some((item) => product.fabric.toLowerCase().includes(item.toLowerCase()))) return false;
   if (occasion.length && !occasion.some((item) => product.occasion.map((entry) => entry.toLowerCase()).includes(item.toLowerCase()))) return false;
   return true;
+}
+
+function sortStatic(items: StaticProduct[], sort: string | null) {
+  const result = [...items];
+  if (sort === "price-low") return result.sort((a, b) => a.price - b.price);
+  if (sort === "price-high") return result.sort((a, b) => b.price - a.price);
+  if (sort === "new") return result.reverse();
+  return result.sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)));
 }
 
 function staticFilterBuckets(items: StaticProduct[]) {
@@ -59,7 +68,7 @@ export async function GET(request: NextRequest) {
   try {
     const params = request.nextUrl.searchParams;
     if (!process.env.MONGODB_URI) {
-      const filtered = products.filter((product) => staticMatches(product, params));
+      const filtered = sortStatic(products.filter((product) => staticMatches(product, params)), params.get("sort"));
       return NextResponse.json({ products: filtered, filters: staticFilterBuckets(products), total: filtered.length });
     }
 
@@ -69,12 +78,19 @@ export async function GET(request: NextRequest) {
     const minPrice = Number(params.get("minPrice") ?? params.get("price_min") ?? 0);
     const maxPrice = Number(params.get("maxPrice") ?? params.get("price_max") ?? Number.MAX_SAFE_INTEGER);
     const search = params.get("q");
+    const sort = params.get("sort") ?? "popular";
 
-    if (category && category !== "all") query.category = category;
     if (Number.isFinite(minPrice) || Number.isFinite(maxPrice)) query.basePrice = { $gte: minPrice, $lte: maxPrice };
     if (search) query.$text = { $search: search };
 
-    const attributes = await CatalogAttribute.find({ isActive: true, isFilterable: true }).sort({ priority: 1 }).lean();
+    const [attributes, dbCategories] = await Promise.all([
+      CatalogAttribute.find({ isActive: true, isFilterable: true }).sort({ priority: 1 }).lean(),
+      Category.find({ isActive: true }).sort({ sortOrder: 1, name: 1 }).lean()
+    ]);
+    if (category && category !== "all") {
+      const selectedCategory = dbCategories.find((item) => item.slug === category);
+      query.category = selectedCategory?._id ?? category;
+    }
     const attributeFilters = attributes.flatMap((attribute) =>
       valuesFor(params, attribute.slug).map((value) => ({ name: attribute.name, value, logic: attribute.filterLogic }))
     );
@@ -90,10 +106,32 @@ export async function GET(request: NextRequest) {
       }));
     }
 
-    const databaseProducts = await Product.find(query).sort({ createdAt: -1 }).lean();
-    const responseProducts = databaseProducts.length ? databaseProducts : products.filter((product) => staticMatches(product, params));
-    const filters = attributes.length
-      ? attributes.map((attribute) => ({
+    const sortMap: Record<string, Record<string, 1 | -1>> = {
+      popular: { isFeatured: -1, isBestseller: -1, createdAt: -1 },
+      new: { createdAt: -1 },
+      "price-low": { basePrice: 1 },
+      "price-high": { basePrice: -1 }
+    };
+    const allMatchingProducts = await Product.find(query).lean();
+    const databaseProducts = await Product.find(query).sort(sortMap[sort] ?? sortMap.popular).lean();
+    const responseProducts = databaseProducts.length ? databaseProducts : sortStatic(products.filter((product) => staticMatches(product, params)), sort);
+    const categoryValues = dbCategories.map((cat) => ({
+      label: cat.name,
+      value: cat.slug,
+      count: allMatchingProducts.filter((product) => String(product.category) === String(cat._id) || String(product.category) === cat.slug).length
+    }));
+    const filters = attributes.length || categoryValues.length
+      ? [
+          ...(categoryValues.length
+            ? [{
+                name: "Category",
+                slug: "category",
+                inputType: "checkbox",
+                filterLogic: "or",
+                values: categoryValues
+              }]
+            : []),
+          ...attributes.map((attribute) => ({
           id: String(attribute._id),
           name: attribute.name,
           slug: attribute.slug,
@@ -105,16 +143,17 @@ export async function GET(request: NextRequest) {
             label: value.label,
             value: value.value,
             colorHex: value.colorHex,
-            count: databaseProducts.filter((product) =>
+            count: allMatchingProducts.filter((product) =>
               JSON.stringify(product).toLowerCase().includes(String(value.value).toLowerCase())
             ).length
           }))
         }))
+        ]
       : staticFilterBuckets(products);
 
     return NextResponse.json({ products: responseProducts, filters, total: responseProducts.length });
   } catch {
-    const filtered = products.filter((product) => staticMatches(product, request.nextUrl.searchParams));
+    const filtered = sortStatic(products.filter((product) => staticMatches(product, request.nextUrl.searchParams)), request.nextUrl.searchParams.get("sort"));
     return NextResponse.json({ products: filtered, filters: staticFilterBuckets(products), total: filtered.length });
   }
 }

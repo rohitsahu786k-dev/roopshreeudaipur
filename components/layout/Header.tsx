@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, Search, ShoppingBag, UserRound, X, LogOut, Settings, Package, ChevronDown, AlignJustify } from "lucide-react";
+import { Heart, Search, ShoppingBag, UserRound, X, LogOut, Settings, Package } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { SideCart } from "@/components/cart/SideCart";
 import { AjaxSearch } from "@/components/search/AjaxSearch";
@@ -76,14 +76,14 @@ export function Header() {
       <header className={`sticky top-0 z-40 w-full transition-shadow duration-300 ${isScrolled ? "shadow-md" : ""} bg-white border-b border-black/8`}>
         {/* Announcement */}
         <div className="bg-ink px-3 py-1.5 text-center text-[10px] font-semibold uppercase tracking-widest text-white sm:text-xs">
-          Free shipping in India on orders above ₹2,999 &nbsp;·&nbsp; WhatsApp: +91 98765 43210
+          Free shipping in India on orders above Rs 2,999 &nbsp;|&nbsp; WhatsApp: +91 98765 43210
         </div>
 
         {/* Main header row */}
-        <div className="flex h-14 items-center px-3 sm:h-16 sm:px-4 md:px-6">
+        <div className="grid h-14 grid-cols-[auto_1fr_auto] items-center gap-3 px-3 sm:h-16 sm:px-4 md:px-6">
 
           {/* LEFT — menu icon (mobile) | logo + nav (desktop) */}
-          <div className="flex items-center gap-4 lg:gap-5">
+          <div className="flex min-w-0 items-center gap-4 lg:gap-5">
             {/* Mobile menu trigger */}
             <button
               type="button"
@@ -116,14 +116,14 @@ export function Header() {
           </div>
 
           {/* CENTER — Logo on mobile (flex, not absolute) */}
-          <div className="flex flex-1 justify-center lg:hidden">
+          <div className="flex justify-center lg:hidden">
             <Link href="/" aria-label="Roop Shree Udaipur">
               <Image src="/logo.jpg" alt="Roop Shree" width={38} height={38} priority className="h-9 w-9 rounded object-cover" />
             </Link>
           </div>
 
           {/* RIGHT — icons */}
-          <div className="flex items-center gap-0.5 sm:gap-1">
+          <div className="flex items-center justify-end gap-0.5 sm:gap-1">
             {/* Currency — desktop only */}
             <select
               className="hidden rounded border border-black/12 bg-white px-2 py-1.5 text-[12px] focus:outline-none md:block"
@@ -271,7 +271,7 @@ export function Header() {
                 </button>
               )}
               <div className="flex items-center justify-between text-[11px] text-ink/40">
-                <span>© 2025 Roop Shree Udaipur</span>
+                <span>© 2026 Roop Shree Udaipur</span>
                 <select className="bg-transparent text-[11px] focus:outline-none" value={currencyCode} onChange={(e) => setCurrencyCode(e.target.value)}>
                   {currencies.map((c) => <option key={c.code} value={c.code}>{c.code}</option>)}
                 </select>

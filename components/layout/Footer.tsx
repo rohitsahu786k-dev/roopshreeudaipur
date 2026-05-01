@@ -36,11 +36,11 @@ const quickLinks = [
 ];
 
 const customerLinks = [
-  { label: "Shipping Information", href: "/contact-us" },
-  { label: "Returns & Exchange", href: "/contact-us" },
-  { label: "Terms & Conditions", href: "/contact-us" },
-  { label: "Privacy Policy", href: "/contact-us" },
-  { label: "FAQs", href: "/contact-us" },
+  { label: "Shipping Information", href: "/shipping" },
+  { label: "Returns & Exchange", href: "/returns" },
+  { label: "Terms & Conditions", href: "/terms" },
+  { label: "Privacy Policy", href: "/privacy" },
+  { label: "FAQs", href: "/faq" },
   { label: "Track My Order", href: "/tracking-order" }
 ];
 
@@ -236,7 +236,12 @@ export function Footer() {
             </div>
           </div>
 
-          <p className="mt-6 text-center text-ink/40">© {new Date().getFullYear()} Roop Shree Udaipur. All rights reserved.</p>
+          <p className="mt-6 text-center text-ink/45">
+            © 2026 Roop Shree Udaipur. All rights reserved. powered by{" "}
+            <Link href="https://iprixmedia.com/" target="_blank" rel="noreferrer" className="font-semibold text-ink hover:text-primary">
+              IPrix media
+            </Link>
+          </p>
         </div>
       </div>
     </footer>

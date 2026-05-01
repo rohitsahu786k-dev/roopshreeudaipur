@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Clock, Instagram, Mail, MapPin, MessageCircle, Phone, ShieldCheck, Sparkles } from "lucide-react";
+import { StorefrontPageRenderer } from "@/components/content/StorefrontPageRenderer";
 import { ContactForm } from "@/components/contact/ContactForm";
 import { roopShreeBusiness } from "@/lib/business";
+import { getPublishedPage } from "@/lib/storefrontPages";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Contact Us | Roop Shree Udaipur",
@@ -39,7 +43,10 @@ const contactCards = [
   }
 ];
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const backendPage = await getPublishedPage("contact-us");
+  if (backendPage) return <StorefrontPageRenderer page={backendPage} />;
+
   return (
     <div className="bg-white">
       <section className="border-b border-black/10 bg-[#f7f7f7]">

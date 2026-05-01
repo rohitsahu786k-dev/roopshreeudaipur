@@ -3,6 +3,8 @@ import ProductFormClient from "@/components/admin/products/ProductFormClient";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Category } from "@/models/Category";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = { title: "New Product — Admin" };
 
 export default async function NewProductPage() {

@@ -11,7 +11,7 @@ type Reel = {
   instagramUrl?: string;
 };
 
-const reels: Reel[] = [
+const fallbackReels: Reel[] = [
   { title: "Bridal lehenga styling", url: "https://www.youtube.com/watch?v=ysz5S6PUM-U", instagramUrl: "https://www.instagram.com/roopshreeudaipur/" },
   { title: "Festive saree edit", url: "https://www.youtube.com/watch?v=ysz5S6PUM-U", instagramUrl: "https://www.instagram.com/roopshreeudaipur/" },
   { title: "Udaipur wedding wear", url: "https://www.youtube.com/watch?v=ysz5S6PUM-U", instagramUrl: "https://www.instagram.com/roopshreeudaipur/" },
@@ -20,7 +20,7 @@ const reels: Reel[] = [
   { title: "Reception looks", url: "https://www.youtube.com/watch?v=ysz5S6PUM-U", instagramUrl: "https://www.instagram.com/roopshreeudaipur/" }
 ];
 
-const instagramPosts = [
+const fallbackInstagramPosts = [
   "https://www.instagram.com/roopshreeudaipur/",
   "https://www.instagram.com/roopshreeudaipur/",
   "https://www.instagram.com/roopshreeudaipur/",
@@ -47,9 +47,28 @@ export function InstagramVideoCarousel() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [modalIndex, setModalIndex] = useState<number | null>(null);
   const [page, setPage] = useState(0);
+  const [reels, setReels] = useState<Reel[]>(fallbackReels);
+  const [instagramPosts, setInstagramPosts] = useState(fallbackInstagramPosts);
+  const [instagramUrl, setInstagramUrl] = useState("https://www.instagram.com/roopshreeudaipur/");
   const refs = useRef<Array<HTMLDivElement | null>>([]);
-  const items = useMemo(() => reels.slice(0, 6), []);
+  const items = useMemo(() => reels.slice(0, 6), [reels]);
   const pages = useMemo(() => [items.slice(0, 3), items.slice(3, 6)], [items]);
+
+  useEffect(() => {
+    fetch("/api/store-settings", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((data) => {
+        const settings = data.settings ?? {};
+        if (settings.instagramUrl) setInstagramUrl(settings.instagramUrl);
+        if (Array.isArray(settings.reels) && settings.reels.length) {
+          setReels(settings.reels.map((item: Reel) => ({ title: item.title || "Roop Shree reel", url: item.url, instagramUrl: item.instagramUrl })).filter((item: Reel) => item.url));
+        }
+        if (Array.isArray(settings.instagramPosts) && settings.instagramPosts.length) {
+          setInstagramPosts(settings.instagramPosts.map((item: { url?: string }) => item.url).filter(Boolean) as string[]);
+        }
+      })
+      .catch(() => undefined);
+  }, []);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -77,14 +96,14 @@ export function InstagramVideoCarousel() {
   }, [modalIndex]);
 
   return (
-    <section id="reels" className="mt-10 bg-ink px-4 py-10 text-white">
+    <section id="reels" className="mt-10 bg-white px-4 py-10 text-ink">
       <div className="mx-auto max-w-[1728px]">
         <div className="mb-5 flex items-end justify-between gap-4">
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/50">Reels</p>
+            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-ink/45">Reels</p>
             <h2 className="mt-2 text-lg font-semibold uppercase tracking-wide">Roop Shree In Motion</h2>
           </div>
-          <Link href="https://www.instagram.com/roopshreeudaipur/" target="_blank" className="text-xs font-bold uppercase tracking-wide text-white/70 hover:text-white">
+          <Link href={instagramUrl} target="_blank" className="text-xs font-bold uppercase tracking-wide text-ink/55 hover:text-ink">
             Instagram
           </Link>
         </div>
@@ -106,7 +125,7 @@ export function InstagramVideoCarousel() {
           </div>
           <div className="mt-4 flex justify-center gap-2">
             {pages.map((_, index) => (
-              <button key={index} type="button" onClick={() => { setPage(index); setActiveIndex(index * 3); }} className={`h-1.5 w-10 ${page === index ? "bg-white" : "bg-white/25"}`} aria-label={`Show reel slide ${index + 1}`} />
+              <button key={index} type="button" onClick={() => { setPage(index); setActiveIndex(index * 3); }} className={`h-1.5 w-10 ${page === index ? "bg-ink" : "bg-ink/15"}`} aria-label={`Show reel slide ${index + 1}`} />
             ))}
           </div>
         </div>
@@ -114,11 +133,11 @@ export function InstagramVideoCarousel() {
         <div className="mt-8">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="text-sm font-bold uppercase tracking-wide">Latest Instagram</h3>
-            <Link href="https://www.instagram.com/roopshreeudaipur/" target="_blank" className="text-xs font-bold uppercase text-white/60 hover:text-white">View profile</Link>
+            <Link href={instagramUrl} target="_blank" className="text-xs font-bold uppercase text-ink/55 hover:text-ink">View profile</Link>
           </div>
           <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-6">
             {instagramPosts.map((url, index) => (
-              <Link key={`${url}-${index}`} href={url} target="_blank" className="grid aspect-square place-items-center border border-white/10 bg-white/5 text-center text-[11px] font-bold uppercase tracking-wide text-white/60 hover:bg-white/10">
+              <Link key={`${url}-${index}`} href={url} target="_blank" className="grid aspect-square place-items-center border border-black/10 bg-[#f7f7f7] text-center text-[11px] font-bold uppercase tracking-wide text-ink/55 hover:bg-neutral">
                 Post {index + 1}
               </Link>
             ))}

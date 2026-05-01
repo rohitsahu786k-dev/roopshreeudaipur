@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bell, Check, Plus, Save, Store, Trash2, Truck } from "lucide-react";
+import { Bell, Check, PlaySquare, Plus, Save, Store, Trash2, Truck } from "lucide-react";
 
 type ShippingZone = {
   countryCode: string;
@@ -41,6 +41,8 @@ type StoreSettings = {
     suggestedCoupons: string[];
     giftWrapThreshold: number;
   };
+  reels: { title: string; url: string; isActive: boolean; sortOrder: number }[];
+  instagramPosts: { url: string; image?: string; caption?: string; sortOrder: number }[];
   shippingZones: ShippingZone[];
 };
 
@@ -69,11 +71,14 @@ const emptySettings: StoreSettings = {
     suggestedCoupons: ["ROOP10", "SHIPFREE", "BRIDAL1500"],
     giftWrapThreshold: 12000
   },
+  reels: [],
+  instagramPosts: [],
   shippingZones: []
 };
 
 const tabs = [
   { id: "store", label: "Store", icon: Store },
+  { id: "reels", label: "Reels", icon: PlaySquare },
   { id: "shipping", label: "Shipping", icon: Truck },
   { id: "notifications", label: "Notifications", icon: Bell }
 ];
@@ -133,6 +138,18 @@ export default function SettingsClient() {
         isActive: true
       }
     ]);
+  }
+
+  function addReel() {
+    update("reels", [...(settings.reels ?? []), { title: "New reel", url: "", isActive: true, sortOrder: settings.reels?.length ?? 0 }]);
+  }
+
+  function updateReel(index: number, key: "title" | "url" | "isActive" | "sortOrder", value: string | number | boolean) {
+    update("reels", settings.reels.map((reel, reelIndex) => (reelIndex === index ? { ...reel, [key]: value } : reel)));
+  }
+
+  function addPost() {
+    update("instagramPosts", [...(settings.instagramPosts ?? []), { url: "", image: "", caption: "", sortOrder: settings.instagramPosts?.length ?? 0 }]);
   }
 
   function updateZone(index: number, key: keyof ShippingZone, value: string | number | boolean) {
@@ -243,6 +260,55 @@ export default function SettingsClient() {
                         <Trash2 className="h-4 w-4" />
                       </button>
                       <input value={zone.estimatedDelivery} onChange={(e) => updateZone(index, "estimatedDelivery", e.target.value)} className="rounded-lg border border-gray-200 px-3 py-2 text-sm md:col-span-6" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          {activeTab === "reels" ? (
+            <div className="space-y-4">
+              <div className="rounded-xl border border-gray-200 bg-white p-6">
+                <div className="mb-4 flex items-center justify-between">
+                  <h2 className="text-sm font-semibold text-gray-900">Homepage Reels</h2>
+                  <button onClick={addReel} className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm hover:bg-gray-50">
+                    <Plus className="h-4 w-4" /> Add Reel
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  {(settings.reels ?? []).map((reel, index) => (
+                    <div key={index} className="grid gap-3 rounded-lg border border-gray-100 p-4 md:grid-cols-[1fr_2fr_90px_40px]">
+                      <input value={reel.title ?? ""} onChange={(e) => updateReel(index, "title", e.target.value)} placeholder="Title" className="rounded-lg border border-gray-200 px-3 py-2 text-sm" />
+                      <input value={reel.url ?? ""} onChange={(e) => updateReel(index, "url", e.target.value)} placeholder="Instagram, YouTube or video URL" className="rounded-lg border border-gray-200 px-3 py-2 text-sm" />
+                      <input type="number" value={reel.sortOrder ?? 0} onChange={(e) => updateReel(index, "sortOrder", Number(e.target.value))} className="rounded-lg border border-gray-200 px-3 py-2 text-sm" />
+                      <button onClick={() => update("reels", settings.reels.filter((_, reelIndex) => reelIndex !== index))} className="grid place-items-center rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-500">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                      <label className="flex items-center gap-2 md:col-span-4">
+                        <input type="checkbox" checked={reel.isActive ?? true} onChange={(e) => updateReel(index, "isActive", e.target.checked)} className="rounded border-gray-300 text-primary" />
+                        <span className="text-sm text-gray-700">Active</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-gray-200 bg-white p-6">
+                <div className="mb-4 flex items-center justify-between">
+                  <h2 className="text-sm font-semibold text-gray-900">Instagram Grid Links</h2>
+                  <button onClick={addPost} className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm hover:bg-gray-50">
+                    <Plus className="h-4 w-4" /> Add Link
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  {(settings.instagramPosts ?? []).map((post, index) => (
+                    <div key={index} className="grid gap-3 rounded-lg border border-gray-100 p-4 md:grid-cols-[2fr_1fr_40px]">
+                      <input value={post.url ?? ""} onChange={(e) => update("instagramPosts", settings.instagramPosts.map((item, itemIndex) => itemIndex === index ? { ...item, url: e.target.value } : item))} placeholder="Instagram post URL" className="rounded-lg border border-gray-200 px-3 py-2 text-sm" />
+                      <input type="number" value={post.sortOrder ?? 0} onChange={(e) => update("instagramPosts", settings.instagramPosts.map((item, itemIndex) => itemIndex === index ? { ...item, sortOrder: Number(e.target.value) } : item))} className="rounded-lg border border-gray-200 px-3 py-2 text-sm" />
+                      <button onClick={() => update("instagramPosts", settings.instagramPosts.filter((_, itemIndex) => itemIndex !== index))} className="grid place-items-center rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-500">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
                     </div>
                   ))}
                 </div>

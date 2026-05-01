@@ -5,6 +5,8 @@ import { blogs as staticBlogs, type BlogPost } from "@/lib/blogs";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Blog as BlogModel } from "@/models/Blog";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Stories & Style Guides — Roop Shree",
   description: "Styling tips, bridal guides, fabric care, and fashion inspiration from Roop Shree Udaipur."

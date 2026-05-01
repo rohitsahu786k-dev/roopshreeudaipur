@@ -1,4 +1,8 @@
 import type { Metadata } from "next";
+import { StorefrontPageRenderer } from "@/components/content/StorefrontPageRenderer";
+import { getPublishedPage } from "@/lib/storefrontPages";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "About Us | Roop Shree",
@@ -9,7 +13,10 @@ export const metadata: Metadata = {
   }
 };
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const backendPage = await getPublishedPage("about-us");
+  if (backendPage) return <StorefrontPageRenderer page={backendPage} />;
+
   return (
     <section className="mx-auto max-w-4xl px-4 py-12">
       <p className="text-sm font-bold uppercase tracking-wide text-primary">About us</p>

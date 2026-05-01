@@ -8,13 +8,20 @@ const rows = [
 ];
 
 import type { Metadata } from "next";
+import { StorefrontPageRenderer } from "@/components/content/StorefrontPageRenderer";
+import { getPublishedPage } from "@/lib/storefrontPages";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Size Guide | Roop Shree",
   description: "Find your perfect fit with our comprehensive size guide for ethnic wear. Bust, waist, and hip measurements for all sizes."
 };
 
-export default function SizeGuidePage() {
+export default async function SizeGuidePage() {
+  const backendPage = await getPublishedPage("size-guide");
+  if (backendPage) return <StorefrontPageRenderer page={backendPage} />;
+
   return (
     <section className="mx-auto max-w-5xl px-4 py-12">
       <h1 className="font-serif text-5xl font-bold">Size guide</h1>

@@ -7,6 +7,8 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { Product as ProductModel } from "@/models/Product";
 import type { Product } from "@/lib/catalog";
 
+export const dynamic = "force-dynamic";
+
 async function getProductBySlug(slug: string): Promise<Product | null> {
   // First try DB
   if (process.env.MONGODB_URI) {

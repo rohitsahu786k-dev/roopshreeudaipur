@@ -11,16 +11,17 @@ import { Skeleton } from "@/components/ui/Skeleton";
 
 type FilterGroup = {
   title: string;
-  values: string[];
+  slug: string;
+  values: { label: string; value: string; count?: number; colorHex?: string }[];
 };
 
 const filterGroups: FilterGroup[] = [
-  { title: "Category", values: categories.filter((item) => item.slug !== "all").map((item) => item.label) },
-  { title: "Designer", values: ["Urmil", "Nupur Kanoi", "Amit Aggarwal", "Simar Dugal", "Bannhi", "Roop Shree"] },
-  { title: "Size", values: ["XS", "S", "M", "L", "XL", "XXL", "Free Size", "Custom"] },
-  { title: "Color", values: ["Red", "Pink", "Yellow", "Blue", "Green", "Ivory", "Gold", "Wine"] },
-  { title: "Discount", values: ["0% - 20%", "21% - 30%", "31% - 40%", "41% - 50%"] },
-  { title: "Shipping Time", values: ["48 Hours", "7 Days", "10 Days", "14 Days", "1-2 Weeks", "3-4 Weeks"] }
+  { title: "Category", slug: "category", values: categories.filter((item) => item.slug !== "all").map((item) => ({ label: item.label, value: item.slug })) },
+  { title: "Designer", slug: "designer", values: ["Urmil", "Nupur Kanoi", "Amit Aggarwal", "Simar Dugal", "Bannhi", "Roop Shree"].map((value) => ({ label: value, value })) },
+  { title: "Size", slug: "size", values: ["XS", "S", "M", "L", "XL", "XXL", "Free Size", "Custom"].map((value) => ({ label: value, value })) },
+  { title: "Color", slug: "color", values: ["Red", "Pink", "Yellow", "Blue", "Green", "Ivory", "Gold", "Wine"].map((value) => ({ label: value, value })) },
+  { title: "Discount", slug: "discount", values: ["0% - 20%", "21% - 30%", "31% - 40%", "41% - 50%"].map((value) => ({ label: value, value })) },
+  { title: "Shipping Time", slug: "shipping-time", values: ["48 Hours", "7 Days", "10 Days", "14 Days", "1-2 Weeks", "3-4 Weeks"].map((value) => ({ label: value, value })) }
 ];
 
 const designers = ["URMIL", "NUPUR KANOI", "AMIT AGGARWAL", "BANNHI BY PRIYANKA", "SIMAR DUGAL", "TWENTY NINE"];
@@ -33,6 +34,16 @@ type ApiFilter = {
   values: { label: string; value: string; count: number; colorHex?: string }[];
   min?: number;
   max?: number;
+};
+
+type ShopBanner = {
+  _id: string;
+  title: string;
+  subtitle?: string;
+  image: string;
+  mobileImage?: string;
+  ctaLabel?: string;
+  ctaHref?: string;
 };
 
 function enrichProducts() {
@@ -48,45 +59,54 @@ function enrichProducts() {
     .slice(0, 24);
 }
 
-function productMatches(product: Product & { displayDesigner: string }, selected: Set<string>, query: string, maxPrice: number) {
+function productMatches(product: Product & { displayDesigner: string }, selected: Record<string, string[]>, query: string, maxPrice: number) {
   const text = `${product.name} ${product.category} ${product.shortDescription} ${product.fabric} ${product.workType} ${product.displayDesigner}`.toLowerCase();
-  const categoryLabel = categories.find((item) => item.slug === product.category)?.label;
-  const selectedValues = Array.from(selected);
+  const selectedValues = Object.entries(selected).flatMap(([slug, values]) => values.map((value) => ({ slug, value })));
 
   if (query && !text.includes(query.toLowerCase())) return false;
   if (product.price > maxPrice) return false;
 
-  return selectedValues.every((value) => {
-    if (categoryLabel === value) return true;
-    if (product.displayDesigner.toLowerCase().includes(value.toLowerCase())) return true;
-    if (product.sizes.includes(value)) return true;
-    if (product.colors.some((color) => color.name.toLowerCase() === value.toLowerCase())) return true;
-    if (value.includes("%")) return true;
-    if (value.includes("Days") || value.includes("Weeks") || value.includes("Hours")) return true;
+  return selectedValues.every(({ slug, value }) => {
+    if (slug === "category") return product.category === value;
+    if (slug === "designer") return product.displayDesigner.toLowerCase().includes(value.toLowerCase());
+    if (slug === "size") return product.sizes.includes(value);
+    if (slug === "color") return product.colors.some((color) => color.name.toLowerCase() === value.toLowerCase());
+    if (slug === "discount") return value.includes("%");
+    if (slug === "shipping-time") return value.includes("Days") || value.includes("Weeks") || value.includes("Hours");
     return false;
   });
 }
 
 export function ShopClient() {
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [selected, setSelected] = useState<Record<string, string[]>>({});
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState("popular");
   const [maxPrice, setMaxPrice] = useState(350000);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [apiProducts, setApiProducts] = useState<Product[]>([]);
   const [apiFilters, setApiFilters] = useState<ApiFilter[]>([]);
+  const [shopBanner, setShopBanner] = useState<ShopBanner | null>(null);
   const [loading, setLoading] = useState(false);
   const { formatMoney } = useCommerce();
   const allProducts = useMemo(() => enrichProducts(), []);
 
   useEffect(() => {
+    fetch("/api/banners?placement=shop_top", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((data) => setShopBanner(data.banners?.[0] ?? null))
+      .catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
     const params = new URLSearchParams();
     if (query) params.set("q", query);
     params.set("maxPrice", String(maxPrice));
-    selected.forEach((value) => {
-      const category = categories.find((item) => item.label === value);
-      if (category) params.set("category", category.slug);
-      else params.append(value.toLowerCase().replace(/\s+/g, "-"), value);
+    params.set("sort", sort);
+    Object.entries(selected).forEach(([slug, values]) => {
+      values.forEach((value) => {
+        if (slug === "category") params.set("category", value);
+        else params.append(slug, value);
+      });
     });
 
     window.history.replaceState(null, "", `/shop?${params.toString()}`);
@@ -117,7 +137,7 @@ export function ShopClient() {
         setApiFilters(data.filters ?? []);
       })
       .finally(() => setLoading(false));
-  }, [maxPrice, query, selected]);
+  }, [maxPrice, query, selected, sort]);
 
   const filteredProducts = useMemo(() => {
     const source = apiProducts.length ? apiProducts : allProducts;
@@ -127,19 +147,25 @@ export function ShopClient() {
     if (sort === "price-high") return [...result].sort((a, b) => b.price - a.price);
     if (sort === "new") return [...result].reverse();
     return result;
-  }, [allProducts, maxPrice, query, selected, sort]);
+  }, [allProducts, apiProducts, maxPrice, query, selected, sort]);
 
-  function toggleFilter(value: string) {
+  function toggleFilter(slug: string, value: string) {
     setSelected((current) => {
-      const next = new Set(current);
-      if (next.has(value)) next.delete(value);
-      else next.add(value);
+      const values = current[slug] ?? [];
+      const nextValues = values.includes(value) ? values.filter((item) => item !== value) : [...values, value];
+      const next = { ...current };
+      if (nextValues.length) next[slug] = nextValues;
+      else delete next[slug];
       return next;
     });
   }
 
   const dynamicFilters = apiFilters.length
-    ? apiFilters.filter((filter) => filter.slug !== "price").map((filter) => ({ title: filter.name, values: filter.values.map((value) => `${value.label} (${value.count})`) }))
+    ? apiFilters.filter((filter) => filter.slug !== "price").map((filter) => ({
+        title: filter.name,
+        slug: filter.slug,
+        values: filter.values
+      }))
     : filterGroups;
 
   const sidebar = (
@@ -156,10 +182,11 @@ export function ShopClient() {
             onChange={(event) => group.title === "Category" && setQuery(event.target.value)}
           />
           <div className="mt-3 max-h-40 space-y-2 overflow-y-auto pr-1">
-            {group.values.map((value, index) => (
-              <label key={value} className="flex items-center gap-2 text-[11px] text-ink/75">
-                <input checked={selected.has(value.replace(/\s\(\d+\)$/, ""))} onChange={() => toggleFilter(value.replace(/\s\(\d+\)$/, ""))} type="checkbox" className="accent-primary" />
-                <span>{value}</span>
+            {group.values.map((value) => (
+              <label key={`${group.slug}-${value.value}`} className="flex items-center gap-2 text-[11px] text-ink/75">
+                <input checked={(selected[group.slug] ?? []).includes(value.value)} onChange={() => toggleFilter(group.slug, value.value)} type="checkbox" className="accent-primary" />
+                {value.colorHex ? <span className="h-3 w-3 rounded-full border border-black/10" style={{ backgroundColor: value.colorHex }} /> : null}
+                <span>{value.label}{typeof value.count === "number" ? ` (${value.count})` : ""}</span>
               </label>
             ))}
           </div>
@@ -191,21 +218,31 @@ export function ShopClient() {
           <div className="hidden lg:block">{sidebar}</div>
 
           <div>
-            <div className="relative aspect-[5/1] min-h-[180px] overflow-hidden bg-neutral">
+            <div className="relative min-h-[260px] overflow-hidden bg-neutral sm:aspect-[5/1] sm:min-h-[180px]">
+              {shopBanner?.mobileImage ? (
+                <Image
+                  src={shopBanner.mobileImage}
+                  alt={shopBanner.title}
+                  fill
+                  priority
+                  className="object-cover md:hidden"
+                  sizes="100vw"
+                />
+              ) : null}
               <Image
-                src="https://images.unsplash.com/photo-1597983073493-88cd35cf93b0?auto=format&fit=crop&w=1800&q=86"
+                src={shopBanner?.image ?? "https://images.unsplash.com/photo-1597983073493-88cd35cf93b0?auto=format&fit=crop&w=1800&q=86"}
                 alt="Most loved finds"
                 fill
                 priority
-                className="object-cover"
+                className={`${shopBanner?.mobileImage ? "hidden md:block" : ""} object-cover object-center`}
                 sizes="100vw"
               />
               <div className="absolute inset-0 bg-gradient-to-r from-white/10 via-transparent to-black/30" />
-              <div className="absolute right-[8%] top-1/2 -translate-y-1/2 text-white">
-                <p className="text-4xl font-light italic">Most-loved</p>
-                <p className="text-3xl font-semibold">Finds</p>
-                <p className="mt-2 text-sm">Designer styles setting the season alight.</p>
-                <Link href="/shop" className="mt-4 inline-flex bg-white px-5 py-2 text-xs font-bold uppercase text-ink">Shop Now</Link>
+              <div className="absolute inset-x-5 bottom-5 text-white sm:inset-auto sm:right-[8%] sm:top-1/2 sm:max-w-sm sm:-translate-y-1/2">
+                <p className="text-3xl font-light italic sm:text-4xl">{shopBanner?.title ?? "Most-loved"}</p>
+                <p className="text-2xl font-semibold sm:text-3xl">{shopBanner ? "" : "Finds"}</p>
+                <p className="mt-2 max-w-xs text-sm">{shopBanner?.subtitle ?? "Designer styles setting the season alight."}</p>
+                <Link href={shopBanner?.ctaHref ?? "/shop"} className="mt-4 inline-flex bg-white px-5 py-2 text-xs font-bold uppercase text-ink">{shopBanner?.ctaLabel ?? "Shop Now"}</Link>
               </div>
             </div>
 
@@ -243,7 +280,7 @@ export function ShopClient() {
                 <p className="text-sm text-ink/60">Try adjusting your filters or search query.</p>
                 <button
                   type="button"
-                  onClick={() => { setSelected(new Set()); setQuery(""); setMaxPrice(350000); }}
+                  onClick={() => { setSelected({}); setQuery(""); setMaxPrice(350000); }}
                   className="mt-4 text-sm font-bold uppercase tracking-wide text-primary underline"
                 >
                   Clear all filters

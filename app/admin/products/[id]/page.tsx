@@ -5,6 +5,8 @@ import { Category } from "@/models/Category";
 import { Product } from "@/models/Product";
 import { notFound } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = { title: "Edit Product — Admin" };
 
 export default async function EditProductPage({ params }: { params: { id: string } }) {

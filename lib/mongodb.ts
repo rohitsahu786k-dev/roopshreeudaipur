@@ -10,6 +10,7 @@ const globalWithMongoose = global as typeof globalThis & {
 };
 
 const cached = globalWithMongoose.mongooseCache ?? { conn: null, promise: null };
+globalWithMongoose.mongooseCache = cached;
 
 export async function connectToDatabase() {
   const MONGODB_URI = process.env.MONGODB_URI;
@@ -24,7 +25,12 @@ export async function connectToDatabase() {
     bufferCommands: false
   });
 
-  cached.conn = await cached.promise;
-  globalWithMongoose.mongooseCache = cached;
+  try {
+    cached.conn = await cached.promise;
+  } catch (error) {
+    cached.promise = null;
+    throw error;
+  }
+
   return cached.conn;
 }
