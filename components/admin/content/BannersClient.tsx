@@ -110,7 +110,7 @@ export default function BannersClient() {
               <label>
                 <span className="mb-1 block text-sm font-medium text-gray-700">Placement</span>
                 <select value={form.placement ?? "home_hero"} onChange={(e) => setForm((p) => ({ ...p!, placement: e.target.value }))} className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm">
-                  {placements.map((placement) => <option key={placement} value={placement}>{placement.replaceAll("_", " ")}</option>)}
+                  {placements.map((placement) => <option key={placement} value={placement}>{placement.split("_").join(" ")}</option>)}
                 </select>
               </label>
               <label>
@@ -159,7 +159,7 @@ export default function BannersClient() {
                     <div className="font-semibold text-gray-900">{banner.title}</div>
                     <div className="line-clamp-1 text-xs text-gray-500">{banner.image}</div>
                   </td>
-                  <td className="px-4 py-3 text-gray-600">{banner.placement.replaceAll("_", " ")}</td>
+                  <td className="px-4 py-3 text-gray-600">{banner.placement.split("_").join(" ")}</td>
                   <td className="px-4 py-3 text-gray-600">{banner.couponCode || banner.ctaLabel || "-"}</td>
                   <td className="px-4 py-3">
                     <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${banner.isActive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>

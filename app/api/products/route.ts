@@ -116,14 +116,16 @@ export async function GET(request: NextRequest) {
     else if (sort === "popular") dbSort = { "ratings.count": -1, createdAt: -1 };
 
     const databaseProducts = await Product.find(query).populate("category", "name slug").sort(dbSort).lean();
-    let responseProducts = hasDatabaseProducts ? databaseProducts : products.filter((product) => staticMatches(product, params));
+    let staticFallback: any[] = products.filter((product) => staticMatches(product, params));
 
-    // Sort static fallback products client-side too
+    // Sort static fallback products too
     if (!hasDatabaseProducts) {
-      if (sort === "price-low") responseProducts = [...responseProducts].sort((a: any, b: any) => a.price - b.price);
-      else if (sort === "price-high") responseProducts = [...responseProducts].sort((a: any, b: any) => b.price - a.price);
-      else if (sort === "new") responseProducts = [...responseProducts].reverse();
+      if (sort === "price-low") staticFallback = [...staticFallback].sort((a, b) => a.price - b.price);
+      else if (sort === "price-high") staticFallback = [...staticFallback].sort((a, b) => b.price - a.price);
+      else if (sort === "new") staticFallback = [...staticFallback].reverse();
     }
+
+    const responseProducts = hasDatabaseProducts ? databaseProducts : staticFallback;
     const activeCategories = await Category.find({ isActive: true }).sort({ sortOrder: 1, name: 1 }).lean();
     const categoryFilter = {
       name: "Category",

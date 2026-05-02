@@ -1,8 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { Check, Edit, FileText, Plus, Trash2, X } from "lucide-react";
-import { RichTextEditor } from "@/components/admin/content/RichTextEditor";
+
+const RichTextEditor = dynamic(
+  () => import("@/components/admin/content/RichTextEditor").then((mod) => mod.RichTextEditor),
+  { ssr: false, loading: () => <textarea className="min-h-[260px] w-full rounded-lg border border-gray-200 px-3 py-2 text-sm" placeholder="Loading editor..." /> }
+);
 
 type BlogItem = {
   _id: string;
