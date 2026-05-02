@@ -10,17 +10,17 @@ const config: Config = {
       },
       colors: {
         primary: {
-          DEFAULT: "#7B1E38", // Maroon
-          dark: "#000000" // Black
+          DEFAULT: "#000000", // Black
+          dark: "#111111" // Near Black
         },
         secondary: {
           DEFAULT: "#000000" // Black
         },
         accent: {
-          DEFAULT: "#7B1E38" // Maroon
+          DEFAULT: "#000000" // Black
         },
         neutral: {
-          DEFAULT: "#F8F8F8" // Light Gray
+          DEFAULT: "#F5F5F5" // Light Gray
         },
         ink: "#000000" // Black
       },

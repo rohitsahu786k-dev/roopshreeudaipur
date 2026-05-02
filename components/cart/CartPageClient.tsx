@@ -39,11 +39,11 @@ export function CartPageClient() {
 
   return (
     <section className="bg-[#f8f8f8]">
-      <div className="mx-auto max-w-7xl px-4 py-10">
+      <div className="mx-auto max-w-7xl px-4 py-7 sm:py-10">
         <div className="mb-8 flex flex-col justify-between gap-4 border-b border-black/10 pb-6 md:flex-row md:items-end">
           <div>
             <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-ink/55">Shopping Bag</p>
-            <h1 className="mt-2 text-4xl font-semibold uppercase tracking-wide">Your Cart</h1>
+            <h1 className="mt-2 text-3xl font-semibold uppercase tracking-wide sm:text-4xl">Your Cart</h1>
             <p className="mt-2 text-sm text-ink/60">{cartItems.length} items reserved for checkout.</p>
           </div>
           <Link href="/shop" className="focus-ring border border-black/20 bg-white px-5 py-3 text-sm font-bold uppercase tracking-wide hover:bg-neutral">
@@ -136,7 +136,7 @@ export function CartPageClient() {
 
             <section className="border border-black/10 bg-white p-5">
               <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wide"><Tag size={17} /> Apply Coupon</h2>
-              <form action={submitCoupon} className="mt-4 flex gap-2">
+              <form action={submitCoupon} className="mt-4 flex flex-col gap-2 sm:flex-row">
                 <input
                   name="coupon"
                   value={couponInput}

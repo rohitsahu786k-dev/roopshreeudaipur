@@ -42,6 +42,7 @@ type AccountOrder = {
   payment_status: string;
   order_status: string;
   invoice_url?: string;
+  packing_slip_url?: string;
   tracking_url?: string;
   can_cancel: boolean;
 };
@@ -361,7 +362,8 @@ export function AccountDashboardClient() {
                       </div>
                       <div className="flex flex-wrap gap-2 md:justify-end">
                         {order.tracking_url ? <Link href={order.tracking_url} target="_blank" className="focus-ring border border-black/15 px-3 py-2 text-xs font-bold uppercase">Track</Link> : null}
-                        {order.invoice_url ? <Link href={order.invoice_url} target="_blank" className="focus-ring border border-black/15 px-3 py-2 text-xs font-bold uppercase">Invoice</Link> : null}
+                        {order.invoice_url ? <Link href={order.invoice_url} download className="focus-ring border border-black/15 px-3 py-2 text-xs font-bold uppercase">Invoice</Link> : null}
+                        {order.packing_slip_url ? <Link href={order.packing_slip_url} download className="focus-ring border border-black/15 px-3 py-2 text-xs font-bold uppercase">Packing Slip</Link> : null}
                         <button type="button" onClick={() => reorder(order.id)} className="focus-ring bg-ink px-3 py-2 text-xs font-bold uppercase text-white">Reorder</button>
                         {order.can_cancel ? <button type="button" onClick={() => cancelOrder(order.id)} className="focus-ring border border-black/15 px-3 py-2 text-xs font-bold uppercase text-ink/60">Cancel</button> : null}
                       </div>

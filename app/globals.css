@@ -17,6 +17,11 @@ html {
   overflow-x: hidden;
 }
 
+html {
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
   background: var(--background);
@@ -24,6 +29,13 @@ body {
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   word-break: break-word;
+}
+
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
 }
 
 a {

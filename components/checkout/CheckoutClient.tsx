@@ -50,10 +50,10 @@ export function CheckoutClient() {
 
   return (
     <section className="bg-[#f8f8f8]">
-      <div className="mx-auto max-w-7xl px-4 py-10">
+      <div className="mx-auto max-w-7xl px-4 py-7 sm:py-10">
         <div className="mb-8 border-b border-black/10 pb-6">
           <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-primary">Secure Checkout</p>
-          <h1 className="mt-2 text-4xl font-semibold uppercase tracking-wide">Complete Your Order</h1>
+          <h1 className="mt-2 text-3xl font-semibold uppercase tracking-wide sm:text-4xl">Complete Your Order</h1>
           <p className="mt-2 text-sm text-ink/60">Professional checkout with billing, shipping, payment, and delivery checks.</p>
         </div>
 
@@ -130,7 +130,7 @@ export function CheckoutClient() {
                   <p className="text-sm font-bold">{formatMoney(item.subtotal)}</p>
                 </div>
               ))}
-              <form action={submitCoupon} className="flex gap-2 border-t border-black/10 pt-4">
+              <form action={submitCoupon} className="flex flex-col gap-2 border-t border-black/10 pt-4 sm:flex-row">
                 <input
                   name="coupon"
                   value={couponInput}

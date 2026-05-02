@@ -38,7 +38,8 @@ export async function GET(request: NextRequest) {
       total_amount: order.total,
       payment_status: order.paymentStatus,
       order_status: order.orderStatus,
-      invoice_url: order.invoiceUrl ?? order.shiprocketInvoiceUrl ?? "",
+      invoice_url: `/api/orders/${order._id}/invoice`,
+      packing_slip_url: `/api/orders/${order._id}/packing-slip`,
       tracking_url: order.shiprocketTrackingUrl ?? "",
       can_cancel: ["pending", "confirmed", "processing"].includes(String(order.orderStatus))
     })),

@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import { NextResponse, type NextRequest } from "next/server";
 import { setAuthCookie, signAuthToken } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
+import { issueEmailVerificationOtp } from "@/lib/otp";
 import { User } from "@/models/User";
 
 export async function POST(request: NextRequest) {
@@ -24,9 +25,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
     }
 
+    if (!user.emailVerified && user.role === "admin") {
+      user.emailVerified = true;
+      await user.save();
+    }
+
     if (!user.emailVerified) {
+      try {
+        await issueEmailVerificationOtp(user);
+      } catch {
+        return NextResponse.json({
+          error: "Email not verified. OTP email could not be sent, please use Resend OTP.",
+          requiresVerification: true,
+          email: user.email
+        }, { status: 403 });
+      }
+
       return NextResponse.json({ 
-        error: "Email not verified", 
+        error: "Email not verified. A fresh OTP has been sent.", 
         requiresVerification: true,
         email: user.email 
       }, { status: 403 });

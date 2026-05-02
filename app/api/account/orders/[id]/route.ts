@@ -26,7 +26,8 @@ export async function GET(_request: Request, { params }: Context) {
       payment_status: order.paymentStatus,
       order_status: order.orderStatus,
       billing: order.billing,
-      invoice_url: order.invoiceUrl ?? order.shiprocketInvoiceUrl ?? "",
+      invoice_url: `/api/orders/${order._id}/invoice`,
+      packing_slip_url: `/api/orders/${order._id}/packing-slip`,
       tracking_url: order.shiprocketTrackingUrl ?? ""
     }
   });

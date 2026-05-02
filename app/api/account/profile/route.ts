@@ -1,5 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { publicProfile, requireAccountUser, verifyPassword } from "@/lib/account";
+import { sendEmail } from "@/lib/email";
+import { getVerificationEmailTemplate } from "@/lib/emailTemplates";
 
 function makeOtp() {
   return String(Math.floor(100000 + Math.random() * 900000));
@@ -24,20 +26,28 @@ export async function PATCH(request: NextRequest) {
     if (typeof payload.avatar === "string") user.avatar = payload.avatar.trim();
 
     if (typeof payload.email === "string" && payload.email.trim().toLowerCase() !== user.email) {
+      const pendingEmail = payload.email.trim().toLowerCase();
       if (!(await verifyPassword(user, String(payload.currentPassword ?? "")))) {
         return NextResponse.json({ error: "Current password is required to change email" }, { status: 403 });
       }
-      user.pendingEmail = payload.email.trim().toLowerCase();
+      user.pendingEmail = pendingEmail;
       user.emailVerified = false;
       user.verificationOtp = makeOtp();
       user.verificationOtpExpires = new Date(Date.now() + 1000 * 60 * 10);
+      await sendEmail({
+        to: pendingEmail,
+        subject: "Verify your new Roop Shree email",
+        html: getVerificationEmailTemplate(user.name, user.verificationOtp)
+      });
     }
 
     if (typeof payload.phone === "string" && payload.phone.trim() !== (user.phone ?? "")) {
       user.pendingPhone = payload.phone.trim();
       user.phoneVerified = false;
-      user.verificationOtp = makeOtp();
-      user.verificationOtpExpires = new Date(Date.now() + 1000 * 60 * 10);
+      if (!user.verificationOtp) {
+        user.verificationOtp = makeOtp();
+        user.verificationOtpExpires = new Date(Date.now() + 1000 * 60 * 10);
+      }
     }
 
     await user.save();

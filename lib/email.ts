@@ -40,7 +40,17 @@ function escapeHtml(value: string) {
     .replaceAll("'", "&#039;");
 }
 
-export async function sendEmail({ to, subject, html }: { to: string; subject: string; html: string }) {
+export async function sendEmail({
+  to,
+  subject,
+  html,
+  attachments
+}: {
+  to: string;
+  subject: string;
+  html: string;
+  attachments?: Array<{ filename: string; content: Buffer; contentType?: string }>;
+}) {
   const config = getGoogleSmtpConfig();
   const transporter = nodemailer.createTransport({
     host: config.host,
@@ -56,7 +66,8 @@ export async function sendEmail({ to, subject, html }: { to: string; subject: st
     from: `"Roop Shree" <${config.from}>`,
     to,
     subject,
-    html
+    html,
+    attachments
   });
 }
 

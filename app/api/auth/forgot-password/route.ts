@@ -2,6 +2,8 @@ import crypto from "crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
 import { User } from "@/models/User";
+import { sendEmail } from "@/lib/email";
+import { getForgotPasswordTemplate } from "@/lib/emailTemplates";
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,12 +28,23 @@ export async function POST(request: NextRequest) {
     user.resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hour
     await user.save();
 
-    // In a real app, send email with resetToken
-    console.log(`Password reset token for ${email}: ${resetToken}`);
+    // Send reset email
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+    const resetLink = `${siteUrl}/account/reset-password?token=${resetToken}`;
+    
+    try {
+      await sendEmail({
+        to: user.email,
+        subject: "Reset your Roop Shree password",
+        html: getForgotPasswordTemplate(user.name, resetLink, "1 hour")
+      });
+      console.log(`Password reset email sent to ${user.email}`);
+    } catch (emailError) {
+      console.error("Failed to send reset email:", emailError);
+    }
 
     return NextResponse.json({ 
-      message: "Password reset link sent to your email.",
-      debugToken: resetToken // Only for development/testing
+      message: "Password reset link sent to your email. Please check your inbox."
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to process forgot password";

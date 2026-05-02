@@ -49,6 +49,9 @@ async function getOrCreateSettings() {
   return StoreSetting.create({
     key: "default",
     storeName: roopShreeBusiness.name,
+    legalName: roopShreeBusiness.name,
+    gstNumber: roopShreeBusiness.gstNumber,
+    logoUrl: roopShreeBusiness.logoUrl,
     instagramUrl: roopShreeBusiness.instagramUrl,
     defaultSeo: {
       keywords: roopShreeBusiness.seoKeywords

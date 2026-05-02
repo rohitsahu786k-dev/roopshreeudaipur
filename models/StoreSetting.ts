@@ -25,7 +25,10 @@ const storeSettingSchema = new mongoose.Schema(
   {
     key: { type: String, default: "default", unique: true },
     storeName: { type: String, default: "Roop Shree Udaipur" },
+    legalName: { type: String, default: "Roop Shree Udaipur" },
     tagline: { type: String, default: "Bridal lehengas, sarees, suits and handcrafted occasion wear from Udaipur." },
+    logoUrl: { type: String, default: "/logo.jpg" },
+    gstNumber: { type: String, default: "08ABKFR6839B1ZY" },
     email: { type: String, default: "info@roopshreeudaipur.com" },
     phone: { type: String, default: "+91 98765 43210" },
     whatsapp: { type: String, default: "+91 98765 43210" },

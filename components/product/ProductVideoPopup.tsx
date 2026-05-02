@@ -4,6 +4,11 @@ import { X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import ReactPlayer from "react-player/lazy";
 
+// Validate if URL is a supported video platform
+function isSupportedVideoUrl(url: string) {
+  return /youtube\.com|youtu\.be|vimeo\.com|instagram\.com/i.test(url);
+}
+
 function instagramEmbedUrl(url: string) {
   const clean = url.split("?")[0].replace(/\/$/, "");
   return `${clean}/embed`;
@@ -14,7 +19,7 @@ export function ProductVideoPopup({ url }: { url?: string }) {
   const isInstagram = useMemo(() => Boolean(url && /instagram\.com/i.test(url)), [url]);
 
   useEffect(() => {
-    if (!url) return;
+    if (!url || !isSupportedVideoUrl(url)) return; // Don't open for invalid/unsupported URLs
     const closed = window.sessionStorage.getItem(`product_reel_closed:${url}`);
     setOpen(!closed);
   }, [url]);

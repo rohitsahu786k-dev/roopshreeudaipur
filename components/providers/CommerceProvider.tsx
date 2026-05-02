@@ -93,6 +93,7 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
     async function hydrateCommerce() {
       let guestSlugs: string[] = [];
       let guestCartItems: CartItem[] = [];
+      let currentUser: any | null = null;
       const sessionId = ensureCartSessionId();
       setCartSessionId(sessionId);
 
@@ -100,7 +101,8 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
         const meResponse = await fetch("/api/auth/me", { cache: "no-store" });
         if (meResponse.ok) {
           const userData = await meResponse.json();
-          setUser(userData.user);
+          currentUser = userData.user;
+          setUser(currentUser);
           setWishlistIsServerBacked(true);
           setCartIsServerBacked(true);
         } else {
@@ -125,7 +127,7 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
           setCartItems(guestCartItems);
         }
 
-        if (user && guestSlugs.length && !mergedGuestWishlist.current) {
+        if (currentUser && guestSlugs.length && !mergedGuestWishlist.current) {
           mergedGuestWishlist.current = true;
           await fetch("/api/wishlist/merge", {
             method: "POST",
@@ -135,7 +137,7 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
           window.localStorage.removeItem("roopshree_wishlist");
         }
 
-        if (user && guestCartItems.length && !mergedGuestCart.current) {
+        if (currentUser && guestCartItems.length && !mergedGuestCart.current) {
           mergedGuestCart.current = true;
           await fetch("/api/cart/sync", {
             method: "POST",

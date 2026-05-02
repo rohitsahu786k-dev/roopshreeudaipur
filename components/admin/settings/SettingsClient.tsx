@@ -15,7 +15,10 @@ type ShippingZone = {
 
 type StoreSettings = {
   storeName: string;
+  legalName: string;
   tagline: string;
+  logoUrl: string;
+  gstNumber: string;
   email: string;
   phone: string;
   whatsapp: string;
@@ -48,7 +51,10 @@ type StoreSettings = {
 
 const emptySettings: StoreSettings = {
   storeName: "Roop Shree Udaipur",
+  legalName: "Roop Shree Udaipur",
   tagline: "Bridal lehengas, sarees, suits and handcrafted occasion wear from Udaipur.",
+  logoUrl: "/logo.jpg",
+  gstNumber: "08ABKFR6839B1ZY",
   email: "info@roopshreeudaipur.com",
   phone: "+91 98765 43210",
   whatsapp: "+91 98765 43210",
@@ -194,6 +200,9 @@ export default function SettingsClient() {
             <div className="grid gap-4 rounded-xl border border-gray-200 bg-white p-6 md:grid-cols-2">
               {[
                 ["storeName", "Store Name"],
+                ["legalName", "Legal Name"],
+                ["gstNumber", "GSTIN"],
+                ["logoUrl", "Invoice Logo URL"],
                 ["tagline", "Tagline"],
                 ["email", "Email"],
                 ["phone", "Phone"],

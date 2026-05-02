@@ -15,8 +15,7 @@ import {
   Box
 } from "lucide-react";
 import { format } from "date-fns";
-import { generateInvoicePDF, generateThermalInvoice } from "@/lib/invoice-client";
-import { generatePackagingSlipPDF } from "@/lib/packaging-slip-client";
+import { generateThermalInvoice } from "@/lib/invoice-client";
 import toast from "react-hot-toast";
 
 type Order = {
@@ -71,11 +70,8 @@ export default function OrdersClient() {
   const handleDownloadInvoice = async (orderId: string) => {
     setActionLoading(orderId + "-pdf");
     try {
-      const order = await fetchFullOrder(orderId);
-      const settingsRes = await fetch("/api/admin/settings");
-      const settings = await settingsRes.json();
-      await generateInvoicePDF(order, settings);
-      toast.success("Invoice generated");
+      window.location.href = `/api/orders/${orderId}/invoice`;
+      toast.success("Invoice download started");
     } catch (err) {
       toast.error("Failed to generate invoice");
     } finally {
@@ -86,11 +82,8 @@ export default function OrdersClient() {
   const handleDownloadPackagingSlip = async (orderId: string) => {
     setActionLoading(orderId + "-pkg");
     try {
-      const order = await fetchFullOrder(orderId);
-      const settingsRes = await fetch("/api/admin/settings");
-      const settings = await settingsRes.json();
-      await generatePackagingSlipPDF(order, settings);
-      toast.success("Packaging slip generated");
+      window.location.href = `/api/orders/${orderId}/packing-slip`;
+      toast.success("Packing slip download started");
     } catch (err) {
       toast.error("Failed to generate packaging slip");
     } finally {
@@ -101,10 +94,10 @@ export default function OrdersClient() {
   const handlePrintThermal = async (orderId: string) => {
     setActionLoading(orderId + "-thermal");
     try {
-      const order = await fetchFullOrder(orderId);
-      const settingsRes = await fetch("/api/admin/settings");
-      const settings = await settingsRes.json();
-      generateThermalInvoice(order, settings);
+      const data = await fetchFullOrder(orderId);
+      const settingsRes = await fetch("/api/admin/store-settings");
+      const settingsData = await settingsRes.json();
+      generateThermalInvoice(data.order, settingsData.settings);
     } catch (err) {
       toast.error("Failed to prepare print");
     } finally {

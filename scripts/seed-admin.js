@@ -39,6 +39,7 @@ async function main() {
       password: { type: String, required: true },
       role: { type: String, enum: ["user", "manager", "admin"], default: "user" },
       phone: { type: String, trim: true },
+      emailVerified: { type: Boolean, default: true },
       addresses: Array
     },
     { timestamps: true }
@@ -52,7 +53,8 @@ async function main() {
       name: "Roop Shree Admin",
       email,
       password: hashedPassword,
-      role: "admin"
+      role: "admin",
+      emailVerified: true
     },
     { upsert: true, new: true, setDefaultsOnInsert: true }
   );

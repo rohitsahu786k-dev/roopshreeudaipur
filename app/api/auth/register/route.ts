@@ -1,33 +1,47 @@
 import bcrypt from "bcryptjs";
 import { NextResponse, type NextRequest } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
+import { issueEmailVerificationOtp, makeOtp } from "@/lib/otp";
 import { User } from "@/models/User";
-import { sendOtpEmail } from "@/lib/email";
 
 export async function POST(request: NextRequest) {
   try {
     const { name, email, password, phone } = await request.json();
+    const normalizedEmail = String(email ?? "").toLowerCase().trim();
 
-    if (!name || !email || !password) {
+    if (!name || !normalizedEmail || !password) {
       return NextResponse.json({ error: "Name, email, and password are required" }, { status: 400 });
     }
 
     await connectToDatabase();
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
+      if (!existingUser.emailVerified) {
+        try {
+          await issueEmailVerificationOtp(existingUser);
+          return NextResponse.json({
+            message: "Account already exists. A fresh OTP has been sent.",
+            email: existingUser.email,
+            requiresVerification: true
+          });
+        } catch {
+          return NextResponse.json({ error: "Account exists but OTP email could not be sent. Please try resend OTP." }, { status: 500 });
+        }
+      }
+
       return NextResponse.json({ error: "Email is already registered" }, { status: 409 });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     
     // Generate 6-digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    const otp = makeOtp();
+    const otpExpires = new Date(Date.now() + 30 * 60 * 1000);
 
     const user = await User.create({ 
       name, 
-      email, 
+      email: normalizedEmail,
       phone, 
       password: hashedPassword,
       verificationOtp: otp,
@@ -35,11 +49,12 @@ export async function POST(request: NextRequest) {
       emailVerified: false
     });
 
-    console.log(`Verification OTP for ${email}: ${otp}`);
+    // Send verification email
     try {
-      await sendOtpEmail(name, String(email).toLowerCase().trim(), otp);
+      await issueEmailVerificationOtp(user);
     } catch (emailError) {
-      console.error("Failed to send OTP email:", emailError);
+      console.error("Failed to send verification email:", emailError);
+      // We still created the user, they can try resending the OTP later
     }
 
     return NextResponse.json({

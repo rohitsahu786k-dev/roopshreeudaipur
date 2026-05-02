@@ -6,17 +6,6 @@ import { useState } from "react";
 
 type Mode = "login" | "register" | "verify" | "forgot" | "reset";
 
-async function resendOtp(email: string): Promise<string> {
-  const res = await fetch("/api/auth/resend-otp", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email })
-  });
-  const data = (await res.json()) as { message?: string; error?: string };
-  if (!res.ok) throw new Error(data.error ?? "Failed to resend OTP");
-  return data.message ?? "OTP resent";
-}
-
 type AuthResponse = {
   user?: {
     role: "user" | "manager" | "admin";
@@ -41,7 +30,6 @@ export function AuthPanel() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [resetToken, setResetToken] = useState("");
-  const [resendLoading, setResendLoading] = useState(false);
 
   async function handleSubmit(formData: FormData) {
     setLoading(true);
@@ -71,7 +59,7 @@ export function AuthPanel() {
         if (data.requiresVerification) {
           setEmail(data.email ?? "");
           setMode("verify");
-          setStatus("Please verify your email to continue.");
+          setStatus(data.error ?? "Please verify your email to continue.");
         } else {
           setStatus(data.error ?? "Operation failed");
         }
@@ -86,12 +74,7 @@ export function AuthPanel() {
       }
 
       if (mode === "forgot") {
-        setSuccess("If an account exists, a reset link/token has been sent.");
-        if (data.debugToken) {
-          console.log("Debug Token:", data.debugToken);
-          setResetToken(data.debugToken);
-          setMode("reset");
-        }
+        setSuccess("Password reset link sent! Please check your email inbox and follow the link.");
         return;
       }
 
@@ -103,12 +86,38 @@ export function AuthPanel() {
 
       if (data.user) {
         window.location.href = destinationForRole(data.user.role);
+      }
+    } catch {
+      setStatus("Unable to connect to the server");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function resendOtp() {
+    if (!email) {
+      setStatus("Enter your email, then request a new OTP.");
+      return;
+    }
+
+    setLoading(true);
+    setStatus("");
+    setSuccess("");
+
+    try {
+      const response = await fetch("/api/auth/resend-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email })
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        setStatus(data.error ?? "Unable to resend OTP");
         return;
       }
 
-      if (mode === "verify") {
-        window.location.href = "/dashboard";
-      }
+      setSuccess(data.message ?? "Verification code sent.");
     } catch {
       setStatus("Unable to connect to the server");
     } finally {
@@ -153,7 +162,7 @@ export function AuthPanel() {
            mode === "forgot" ? "Forgot Password" : "Set New Password"}
         </h2>
         
-        <form action={handleSubmit} className="mt-7 grid gap-4">
+        <form onSubmit={(e) => { e.preventDefault(); handleSubmit(new FormData(e.currentTarget)); }} className="mt-7 grid gap-4">
           {mode === "login" || mode === "register" ? (
             <>
               {mode === "register" && (
@@ -209,35 +218,35 @@ export function AuthPanel() {
             </>
           ) : mode === "verify" ? (
             <>
-              <p className="text-sm text-gray-500">We&apos;ve sent a 6-digit code to <strong>{email}</strong>. Check your inbox (and spam folder).</p>
+              <p className="text-sm text-gray-500">We&apos;ve sent a 6-digit code to {email}.</p>
+              <label className="grid gap-2 text-xs font-bold uppercase tracking-wide text-ink/70">
+                Email Address
+                <input
+                  name="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  type="email"
+                  required
+                  className="focus-ring w-full border border-black/15 px-4 py-3 text-sm font-medium normal-case tracking-normal"
+                />
+              </label>
               <label className="grid gap-2 text-xs font-bold uppercase tracking-wide text-ink/70">
                 Enter OTP
-                <input name="otp" required maxLength={6} inputMode="numeric" pattern="[0-9]{6}" className="focus-ring w-full border border-black/15 px-4 py-3 text-center text-lg font-bold tracking-[0.5em]" />
-              </label>
-              <div className="flex items-center justify-between text-xs">
-                <button
-                  type="button"
-                  disabled={resendLoading}
-                  onClick={async () => {
-                    setResendLoading(true);
-                    setStatus("");
-                    try {
-                      const msg = await resendOtp(email);
-                      setSuccess(msg);
-                    } catch (err) {
-                      setStatus(err instanceof Error ? err.message : "Failed to resend");
-                    } finally {
-                      setResendLoading(false);
-                    }
+                <input
+                  name="otp"
+                  required
+                  maxLength={6}
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  onChange={(event) => {
+                    event.currentTarget.value = event.currentTarget.value.replace(/\D/g, "").slice(0, 6);
                   }}
-                  className="font-semibold text-ink/60 hover:text-primary disabled:opacity-50"
-                >
-                  {resendLoading ? "Sending…" : "Resend OTP"}
-                </button>
-                <button type="button" onClick={() => { setMode("register"); setStatus(""); setSuccess(""); }} className="font-semibold text-ink/60 hover:text-primary">
-                  Change email
-                </button>
-              </div>
+                  className="focus-ring w-full border border-black/15 px-4 py-3 text-center text-lg font-bold tracking-[0.5em]"
+                />
+              </label>
+              <button type="button" onClick={resendOtp} disabled={loading} className="text-left text-xs font-bold uppercase tracking-wide text-primary disabled:opacity-50">
+                Resend OTP
+              </button>
             </>
           ) : mode === "forgot" ? (
             <>

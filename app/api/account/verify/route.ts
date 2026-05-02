@@ -1,14 +1,18 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { publicProfile, requireAccountUser } from "@/lib/account";
+import { normalizeOtp } from "@/lib/otp";
 
 export async function POST(request: NextRequest) {
   const result = await requireAccountUser();
   if (result.error) return result.error;
 
   const { otp } = await request.json();
+  const normalizedOtp = normalizeOtp(otp);
   const user = result.user;
+  const storedOtp = String((user as any).verificationOtp ?? user.get?.("verificationOtp") ?? "");
+  const otpExpires = (user as any).verificationOtpExpires ?? user.get?.("verificationOtpExpires");
 
-  if (!user.verificationOtp || user.verificationOtp !== String(otp) || !user.verificationOtpExpires || user.verificationOtpExpires < new Date()) {
+  if (!storedOtp || storedOtp !== normalizedOtp || !otpExpires || new Date(otpExpires) < new Date()) {
     return NextResponse.json({ error: "Invalid or expired verification code" }, { status: 400 });
   }
 

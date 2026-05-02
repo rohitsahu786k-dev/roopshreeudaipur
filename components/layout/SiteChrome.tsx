@@ -16,8 +16,7 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Header />
-      {/* pb-16 adds bottom padding on mobile so content isn't hidden behind bottom nav */}
-      <main className="pb-16 lg:pb-0">{children}</main>
+      <main className="pb-20 lg:pb-0">{children}</main>
       <Footer />
       <MobileBottomNav />
     </>

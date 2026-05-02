@@ -200,3 +200,20 @@ export function getContactReplyTemplate(name: string, message: string) {
     `
   });
 }
+
+export function getVerificationEmailTemplate(name: string, otp: string) {
+  return baseTemplate({
+    title: "Verify Your Email",
+    preheader: "Your verification code is " + otp,
+    children: `
+      <p style="margin:0 0 16px;font-size:15px;line-height:24px;">Dear ${escapeHtml(name)},</p>
+      <p style="margin:0 0 16px;font-size:15px;line-height:24px;">Thank you for registering with Roop Shree. Use the verification code below to complete your registration.</p>
+      <div style="margin:24px 0;text-align:center;">
+        <div style="display:inline-block;background:#f8f4f0;border:1px solid #eadfd6;padding:16px 32px;font-size:32px;font-weight:700;letter-spacing:8px;color:#171313;">
+          ${escapeHtml(otp)}
+        </div>
+      </div>
+      <p style="margin:0 0 16px;font-size:14px;line-height:22px;color:#6d625c;">This code is valid for 10 minutes. If you did not request this, you can safely ignore this email.</p>
+    `
+  });
+}

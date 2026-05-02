@@ -106,7 +106,7 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
                   }}
                   className={`relative h-24 w-20 shrink-0 overflow-hidden border bg-white ${activeMedia === "image" && activeImage === image ? "border-primary" : "border-black/10"}`}
                 >
-                  <Image src={image} alt="" fill className="object-cover" sizes="80px" />
+                  <Image src={image} alt="" fill className="object-cover" sizes="80px" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
                 </button>
               ))}
               {product.videoUrl ? (
