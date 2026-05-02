@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { ChevronLeft, Calendar, User, Clock } from "lucide-react";
 import { blogs } from "@/lib/blogs";
 import { connectToDatabase } from "@/lib/mongodb";
@@ -46,7 +47,7 @@ export default async function BlogDetailPage({ params }: { params: { slug: strin
   return (
     <article className="bg-white pb-20">
       <div className="relative h-[400px] w-full md:h-[500px]">
-        <img src={blog.image} alt={blog.title} className="h-full w-full object-cover" />
+        <Image src={blog.image} alt={blog.title} fill className="object-cover" priority sizes="100vw" />
         <div className="absolute inset-0 bg-black/40" />
         <div className="absolute inset-0 flex items-center justify-center p-4">
           <div className="max-w-4xl text-center text-white">

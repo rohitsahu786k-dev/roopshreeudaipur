@@ -5,9 +5,8 @@ import { getProduct, products, type Product as CatalogProduct } from "@/lib/cata
 import { connectToDatabase } from "@/lib/mongodb";
 import { Product } from "@/models/Product";
 
-export function generateStaticParams() {
-  return products.map((product) => ({ slug: product.slug }));
-}
+// Always render at request time — MongoDB is not available at Vercel build time
+export const dynamic = "force-dynamic";
 
 function mapDatabaseProduct(item: any): CatalogProduct {
   const colorValues = item.options?.find((option: any) => option.name?.toLowerCase() === "color")?.values ?? [];

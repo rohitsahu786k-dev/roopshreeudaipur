@@ -3,6 +3,8 @@ export const roopShreeBusiness = {
   shortName: "Roop Shree",
   instagramUrl: "https://www.instagram.com/roopshreeudaipur/",
   location: "Udaipur, Rajasthan",
+  address: "Roop Shree Boutique, Udaipur, Rajasthan 313001, India",
+  whatsappNumber: "919876543210",
   categories: [
     "Bridal lehengas",
     "Hand work sarees",
@@ -25,7 +27,12 @@ export const roopShreeBusiness = {
   supportEmail: "info@roopshreeudaipur.com",
   supportPhone: "+91 98765 43210",
   gstNumber: "08ABKFR6839B1ZY",
-  logoUrl: "/logo.jpg"
+  logoUrl: "/logo.jpg",
+  businessHours: [
+    { label: "Monday – Saturday", value: "10:00 AM – 8:00 PM" },
+    { label: "Sunday", value: "11:00 AM – 6:00 PM" },
+    { label: "Public Holidays", value: "By appointment" }
+  ]
 };
 
 export const defaultShippingZones = [
