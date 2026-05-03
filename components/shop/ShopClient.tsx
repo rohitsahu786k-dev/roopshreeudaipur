@@ -81,7 +81,7 @@ export function ShopClient() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [apiProducts, setApiProducts] = useState<Product[]>([]);
   const [apiFilters, setApiFilters] = useState<ApiFilter[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { formatMoney } = useCommerce();
   const allProducts = useMemo(() => enrichProducts(), []);
 
@@ -101,7 +101,7 @@ export function ShopClient() {
     fetch(`/api/products?${params.toString()}`, { cache: "no-store" })
       .then((response) => response.json())
       .then((data) => {
-        setApiProducts((data.products ?? []).map((item: any) => ({
+        const normalized = (data.products ?? []).map((item: any) => ({
           name: item.name,
           slug: item.slug,
           category: typeof item.category === "string" ? item.category : item.category?.slug ?? "ethnic-wear",
@@ -120,8 +120,12 @@ export function ShopClient() {
           colors: item.colors ?? item.options?.find((option: any) => option.name?.toLowerCase() === "color")?.values?.map((name: string) => ({ name, hex: "#cccccc" })) ?? [],
           sizes: item.sizes ?? item.options?.find((option: any) => option.name?.toLowerCase() === "size")?.values ?? ["Free Size"],
           videoUrl: item.videoUrl ?? item.productVideoUrl
-        })));
+        }));
+        setApiProducts(normalized.length ? normalized : products);
         setApiFilters(data.filters ?? []);
+      })
+      .catch(() => {
+        setApiProducts(products);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -284,8 +288,8 @@ export function ShopClient() {
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-                {filteredProducts.map((product) => (
-                  <ProductCard key={product.slug} product={product} />
+                {filteredProducts.map((product, i) => (
+                  <ProductCard key={`${product.slug}-${i}`} product={product} />
                 ))}
               </div>
             )}
