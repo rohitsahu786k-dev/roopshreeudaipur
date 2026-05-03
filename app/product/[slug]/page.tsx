@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import { ProductDetailClient } from "@/components/product/ProductDetailClient";
-import { ProductVideoPopup } from "@/components/product/ProductVideoPopup";
 import { getProduct, products, type Product as CatalogProduct } from "@/lib/catalog";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Product } from "@/models/Product";
@@ -48,9 +47,13 @@ function mapDatabaseProduct(item: any): CatalogProduct {
 
 async function getProductForSlug(slug: string) {
   if (process.env.MONGODB_URI) {
-    await connectToDatabase();
-    const databaseProduct = await Product.findOne({ slug, isActive: true, status: "active" }).populate("category", "name slug").lean();
-    if (databaseProduct) return mapDatabaseProduct(databaseProduct);
+    try {
+      await connectToDatabase();
+      const databaseProduct = await Product.findOne({ slug, isActive: true, status: "active" }).populate("category", "name slug").lean();
+      if (databaseProduct) return mapDatabaseProduct(databaseProduct);
+    } catch {
+      // DB unavailable — fall through to static catalog
+    }
   }
 
   return getProduct(slug);
@@ -71,10 +74,5 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
 
   const related = products.filter((item) => item.slug !== product.slug);
 
-  return (
-    <>
-      <ProductDetailClient product={product} related={related} />
-      {product.videoUrl ? <ProductVideoPopup url={product.videoUrl} /> : null}
-    </>
-  );
+  return <ProductDetailClient product={product} related={related} />;
 }

@@ -61,7 +61,7 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
     ["Dispatch", product.dispatchTime ?? "Ready to ship in 3-7 business days"]
   ].filter(([, value]) => Boolean(value));
   const includedItems = product.includedItems ?? ["Main outfit", "Matching dupatta where applicable", "Boutique quality check"];
-  const careInstructions = product.careInstructions ?? [product.washCare, "Steam iron on low heat from reverse side", "Store heavy work outfits in a breathable garment bag"];
+  const careInstructions = product.careInstructions ?? [product.washCare, "Steam iron on low heat from reverse side", "Store heavy work outfits in a breathable garment bag"].filter(Boolean) as string[];
   const moreInfoItems = [
     { label: "Occasion", value: product.occasion.join(", ") },
     { label: "Available sizes", value: product.sizes.join(", ") },
@@ -313,7 +313,7 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
           <ProductAccordion title="Product Description" defaultOpen>
             <p>{product.description}</p>
             <ul className="mt-4 grid gap-2">
-              {includedItems.map((item) => <li key={item}>- {item}</li>)}
+              {includedItems.map((item, i) => <li key={i}>- {item}</li>)}
             </ul>
           </ProductAccordion>
           <ProductAccordion title="Shipping & Return">
@@ -324,7 +324,7 @@ export function ProductDetailClient({ product, related }: ProductDetailClientPro
             <p><strong>Fabric:</strong> {product.fabric}</p>
             <p className="mt-2"><strong>Work:</strong> {product.workType}</p>
             <ul className="mt-3 grid gap-2">
-              {careInstructions.map((item) => <li key={item}>- {item}</li>)}
+              {careInstructions.map((item, i) => <li key={i}>- {item}</li>)}
             </ul>
           </ProductAccordion>
           <ProductAccordion title="More Information">
