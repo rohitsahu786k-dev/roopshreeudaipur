@@ -147,16 +147,16 @@ export function CommerceProvider({ children }: { children: ReactNode }) {
           window.localStorage.removeItem("roopshree_cart");
         }
 
-        const wishlistResponse = await fetch("/api/wishlist", { cache: "no-store" });
+        const [wishlistResponse, cartResponse] = await Promise.all([
+          fetch("/api/wishlist", { cache: "no-store" }),
+          fetch("/api/cart", { cache: "no-store", headers: { "x-cart-session-id": sessionId } })
+        ]);
+
         if (wishlistResponse.ok) {
           const data = (await wishlistResponse.json()) as { items?: Array<{ product_id: string; slug?: string }> };
           setWishlistSlugs((data.items ?? []).map((item) => item.slug ?? item.product_id));
         }
 
-        const cartResponse = await fetch("/api/cart", {
-          cache: "no-store",
-          headers: { "x-cart-session-id": sessionId }
-        });
         if (cartResponse.ok) {
           const data = (await cartResponse.json()) as { cart?: { items?: CartItem[]; coupon_code?: string } };
           setCartItems((data.cart?.items ?? []).map(normalizeCartItem));

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 import { SiteChrome } from "@/components/layout/SiteChrome";
 import { CommerceProvider } from "@/components/providers/CommerceProvider";
@@ -66,8 +65,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <CommerceProvider>
           <SiteChrome>{children}</SiteChrome>
         </CommerceProvider>
-        <Script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" strategy="lazyOnload" />
-        <Script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js" strategy="lazyOnload" />
       </body>
     </html>
   );

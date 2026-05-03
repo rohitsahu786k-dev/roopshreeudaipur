@@ -3,6 +3,8 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { Blog } from "@/models/Blog";
 import { blogs as staticBlogs } from "@/lib/blogs";
 
+export const revalidate = 120;
+
 export async function GET() {
   try {
     if (!process.env.MONGODB_URI) {

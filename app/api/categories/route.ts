@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Category } from "@/models/Category";
 
+export const revalidate = 300;
+
 const fallbackImage = (slug: string) => {
   const map: Record<string, string> = {
     lehenga: "photo-1609357605129-26f69add5d6e",

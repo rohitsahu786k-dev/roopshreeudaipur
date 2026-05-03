@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
 import { StoreSetting } from "@/models/StoreSetting";
 
+export const revalidate = 300;
+
 const fallbackSettings = {
   instagramUrl: "https://www.instagram.com/roopshreeudaipur/",
   featureToggles: {

@@ -1,8 +1,13 @@
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ChevronRight } from "lucide-react";
-import { InstagramVideoCarousel } from "@/components/home/InstagramVideoCarousel";
 import { roopShreeBusiness } from "@/lib/business";
+
+const InstagramVideoCarousel = dynamic(
+  () => import("@/components/home/InstagramVideoCarousel").then((mod) => mod.InstagramVideoCarousel),
+  { ssr: false, loading: () => <div className="mt-10 h-64 animate-pulse bg-neutral" /> }
+);
 import { formatPrice, products } from "@/lib/catalog";
 
 const navItems = [
