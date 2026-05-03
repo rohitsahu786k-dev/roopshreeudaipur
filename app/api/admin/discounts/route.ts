@@ -3,6 +3,8 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { Coupon, CouponAttempt, CouponUsage } from "@/models/Coupon";
 import { getCurrentUser } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 function normalizeCouponPayload(body: Record<string, unknown>) {
   return {
     ...body,

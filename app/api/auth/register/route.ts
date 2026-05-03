@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import { NextResponse, type NextRequest } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
-import { issueEmailVerificationOtp, makeOtp } from "@/lib/otp";
+import { issueEmailVerificationOtp } from "@/lib/otp";
 import { User } from "@/models/User";
 
 export async function POST(request: NextRequest) {
@@ -34,27 +34,19 @@ export async function POST(request: NextRequest) {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    
-    // Generate 6-digit OTP
-    const otp = makeOtp();
-    const otpExpires = new Date(Date.now() + 30 * 60 * 1000);
 
-    const user = await User.create({ 
-      name, 
+    const user = await User.create({
+      name,
       email: normalizedEmail,
-      phone, 
+      phone,
       password: hashedPassword,
-      verificationOtp: otp,
-      verificationOtpExpires: otpExpires,
       emailVerified: false
     });
 
-    // Send verification email
     try {
       await issueEmailVerificationOtp(user);
     } catch (emailError) {
       console.error("Failed to send verification email:", emailError);
-      // We still created the user, they can try resending the OTP later
     }
 
     return NextResponse.json({

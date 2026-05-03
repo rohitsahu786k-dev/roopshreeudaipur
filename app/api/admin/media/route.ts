@@ -3,6 +3,8 @@ import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Media } from "@/models/Media";
+
+export const dynamic = "force-dynamic";
 import { getCurrentUser } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {

@@ -4,6 +4,8 @@ import { defaultShippingZones, roopShreeBusiness } from "@/lib/business";
 import { connectToDatabase } from "@/lib/mongodb";
 import { StoreSetting } from "@/models/StoreSetting";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const user = await getCurrentUser();

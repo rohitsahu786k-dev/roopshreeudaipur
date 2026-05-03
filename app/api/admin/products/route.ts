@@ -5,6 +5,8 @@ import { Category } from "@/models/Category";
 import { getCurrentUser } from "@/lib/auth";
 import slugify from "slugify";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: NextRequest) {
   try {
     const user = await getCurrentUser();

@@ -67,7 +67,6 @@ const couponSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-couponSchema.index({ code: 1 });
 couponSchema.index({ isActive: 1, startsAt: 1, endsAt: 1 });
 couponSchema.index({ autoApply: 1, isActive: 1 });
 

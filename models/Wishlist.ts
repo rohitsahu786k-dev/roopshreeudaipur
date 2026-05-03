@@ -16,7 +16,6 @@ const wishlistSchema = new mongoose.Schema(
 
 wishlistSchema.index({ user: 1, slug: 1 }, { unique: true });
 wishlistSchema.index({ user: 1, isDefault: 1 });
-wishlistSchema.index({ shareToken: 1 });
 
 const wishlistItemSchema = new mongoose.Schema(
   {

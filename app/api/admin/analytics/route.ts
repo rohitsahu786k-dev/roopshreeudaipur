@@ -3,6 +3,8 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { Order } from "@/models/Order";
 import { Product } from "@/models/Product";
 import { User } from "@/models/User";
+
+export const dynamic = "force-dynamic";
 import { getCurrentUser } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {

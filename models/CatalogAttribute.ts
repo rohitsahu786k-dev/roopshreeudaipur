@@ -29,7 +29,6 @@ const catalogAttributeSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-catalogAttributeSchema.index({ slug: 1 }, { unique: true });
 catalogAttributeSchema.index({ isFilterable: 1, priority: 1 });
 
 export type CatalogAttributeDocument = InferSchemaType<typeof catalogAttributeSchema>;

@@ -4,6 +4,8 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { serializeReview } from "@/lib/reviewService";
 import { Review } from "@/models/Review";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
   const user = await getCurrentUser();
   if (!user || user.role !== "admin") return NextResponse.json({ error: "Unauthorized" }, { status: 403 });

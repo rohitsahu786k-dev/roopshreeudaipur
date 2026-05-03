@@ -130,7 +130,7 @@ export function CheckoutClient() {
                   <p className="text-sm font-bold">{formatMoney(item.subtotal)}</p>
                 </div>
               ))}
-              <form action={submitCoupon} className="flex flex-col gap-2 border-t border-black/10 pt-4 sm:flex-row">
+              <form onSubmit={(e) => { e.preventDefault(); submitCoupon(new FormData(e.currentTarget)); }} className="flex flex-col gap-2 border-t border-black/10 pt-4 sm:flex-row">
                 <input
                   name="coupon"
                   value={couponInput}

@@ -176,10 +176,10 @@ const productSchema = new mongoose.Schema(
     publishedAt: Date,
     metafields: { type: Map, of: String }
   },
-  { timestamps: true }
+  { timestamps: true, suppressReservedKeysWarning: true }
 );
 
-productSchema.index({ slug: 1 });
+
 productSchema.index({ sku: 1 }, { unique: true, sparse: true });
 productSchema.index({ "variants.sku": 1 }, { unique: true, sparse: true });
 productSchema.index({ status: 1, isActive: 1 });
