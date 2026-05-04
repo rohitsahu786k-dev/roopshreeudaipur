@@ -93,9 +93,6 @@ export function Header() {
     <header className={`sticky top-0 z-40 transition-all duration-300 ${
       isScrolled ? "bg-white shadow-md" : "bg-white/95 backdrop-blur"
     } border-b border-black/10`}>
-      <div className="bg-ink px-3 py-2 text-center text-[10px] font-semibold uppercase tracking-wide text-white sm:text-xs">
-        Free shipping in India on orders above Rs 2,999
-      </div>
       <div className="mx-auto grid max-w-7xl grid-cols-[44px_1fr_auto] items-center gap-2 px-3 py-3 sm:px-4 lg:flex lg:justify-between lg:gap-4 lg:py-4">
         <button
           type="button"

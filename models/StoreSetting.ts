@@ -48,6 +48,9 @@ const storeSettingSchema = new mongoose.Schema(
       default: "Designer ethnic wear for bridal, festive and destination wedding celebrations."
     },
     announcement: { type: String, default: "Free shipping in India on eligible orders. New bridal edits now available." },
+    saleEndsAt: { type: Date },
+    saleLabel: { type: String, default: "Sale Ends In" },
+    announcementMessages: [{ type: String }],
     defaultSeo: {
       title: { type: String, default: "Roop Shree Udaipur | Bridal Lehengas, Sarees & Ethnic Wear" },
       description: {

@@ -97,6 +97,21 @@ const discountProducts = products.slice(0, 4);
 const partyProducts = products.slice(4, 8);
 const weddingProducts = products.slice(8, 16);
 
+const MARQUEE_ITEMS = [
+  "Bridal Lehengas", "Kanjivaram Sarees", "Chikankari Kurta Sets",
+  "Gota Patti Work", "Velvet Lehengas", "Banarasi Silk",
+  "Sharara Sets", "Phulkari Dupattas", "Mirror Work", "Bandhani",
+  "Ready To Ship", "Custom Stitching", "Rajputi Poshak", "Sangeet Wear"
+];
+
+const TESTIMONIALS = [
+  { name: "Priya S.", location: "Udaipur", rating: 5, text: "Absolutely stunning lehenga! The quality of embroidery is exceptional — exactly like the photos. Received compliments all evening at my sister's wedding." },
+  { name: "Meena R.", location: "Jaipur", rating: 5, text: "The saree arrived beautifully packed. Fabric is so soft and the zari border is gorgeous. Will definitely order again for my next event." },
+  { name: "Kavya T.", location: "Mumbai", rating: 5, text: "Ordered a kurta set for Diwali — the chikankari work is so detailed and the fit is perfect. Fast shipping too! Roop Shree is now my go-to." },
+  { name: "Riya M.", location: "Delhi", rating: 5, text: "The sharara set is even more beautiful in person. Colors are vibrant and the quality is bridal-grade. Thank you Roop Shree team!" },
+  { name: "Sunita P.", location: "Ahmedabad", rating: 4, text: "Great experience ordering the Banarasi dupatta. Packaging was careful and the silk is authentic. Customer support was also very helpful." }
+];
+
 export default function HomePage() {
   return (
     <div className="bg-white text-ink">
@@ -135,6 +150,18 @@ export default function HomePage() {
           </div>
         </nav>
       </section>
+
+      {/* ── MARQUEE STRIP ── */}
+      <div className="overflow-hidden border-b border-black/10 bg-white py-3">
+        <div className="animate-marquee whitespace-nowrap">
+          {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, i) => (
+            <span key={i} className="mx-6 inline-flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.18em] text-ink/60">
+              <span className="h-1 w-1 rounded-full bg-ink/30" />
+              {item}
+            </span>
+          ))}
+        </div>
+      </div>
 
       <main className="mx-auto max-w-[1728px] px-3 py-5 sm:px-4 lg:px-7">
 
@@ -234,6 +261,32 @@ export default function HomePage() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
             {blogs.slice(0, 5).map((post) => (
               <BlogCard key={post.id} post={post} />
+            ))}
+          </div>
+        </section>
+
+        {/* ── TESTIMONIALS ── */}
+        <section className="mt-10 border-t border-black/10 pt-8">
+          <div className="mb-6 text-center">
+            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-ink/50">Customer Love</p>
+            <h2 className="mt-1 text-base font-semibold uppercase tracking-wide sm:text-lg">What Our Customers Say</h2>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            {TESTIMONIALS.map((t) => (
+              <div key={t.name} className="flex flex-col gap-3 border border-black/10 bg-white p-4">
+                <div className="flex gap-0.5">
+                  {Array.from({ length: 5 }, (_, i) => (
+                    <svg key={i} width="12" height="12" viewBox="0 0 24 24" fill={i < t.rating ? "#F4B400" : "none"} stroke={i < t.rating ? "#F4B400" : "#D1D5DB"} strokeWidth="2">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                    </svg>
+                  ))}
+                </div>
+                <p className="flex-1 text-[12px] leading-5 text-ink/70">&ldquo;{t.text}&rdquo;</p>
+                <div className="border-t border-black/8 pt-2">
+                  <p className="text-[11px] font-bold uppercase">{t.name}</p>
+                  <p className="text-[10px] text-ink/45">{t.location}</p>
+                </div>
+              </div>
             ))}
           </div>
         </section>

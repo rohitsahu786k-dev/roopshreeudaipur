@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bell, Check, PlaySquare, Plus, Save, Store, Trash2, Truck } from "lucide-react";
+import { Bell, Check, PlaySquare, Plus, Save, Store, Timer, Trash2, Truck } from "lucide-react";
 
 type ShippingZone = {
   countryCode: string;
@@ -24,6 +24,9 @@ type StoreSettings = {
   whatsapp: string;
   instagramUrl: string;
   announcement: string;
+  saleEndsAt: string;
+  saleLabel: string;
+  announcementMessages: string[];
   address: {
     line1: string;
     line2?: string;
@@ -60,6 +63,14 @@ const emptySettings: StoreSettings = {
   whatsapp: "+91 98765 43210",
   instagramUrl: "https://www.instagram.com/roopshreeudaipur/",
   announcement: "Free shipping in India on eligible orders. New bridal edits now available.",
+  saleEndsAt: "2026-05-15T23:59:59",
+  saleLabel: "Sale Ends In",
+  announcementMessages: [
+    "Grand Festive Sale — Up to 40% Off Sitewide",
+    "Free shipping in India on orders above ₹2,999",
+    "New bridal lehengas just dropped — Shop Now",
+    "Handcrafted ethnic wear from Udaipur Studio"
+  ],
   address: {
     line1: "Udaipur, Rajasthan",
     city: "Udaipur",
@@ -84,6 +95,7 @@ const emptySettings: StoreSettings = {
 
 const tabs = [
   { id: "store", label: "Store", icon: Store },
+  { id: "sale", label: "Sale Timer", icon: Timer },
   { id: "reels", label: "Reels", icon: PlaySquare },
   { id: "shipping", label: "Shipping", icon: Truck },
   { id: "notifications", label: "Notifications", icon: Bell }
@@ -228,6 +240,71 @@ export default function SettingsClient() {
                   <input value={settings.defaultSeo.schemaType} onChange={(e) => update("defaultSeo.schemaType", e.target.value)} placeholder="Schema type" className="rounded-lg border border-gray-200 px-3 py-2.5 text-sm" />
                   <textarea value={settings.defaultSeo.description} onChange={(e) => update("defaultSeo.description", e.target.value)} placeholder="Meta description" rows={3} className="rounded-lg border border-gray-200 px-3 py-2.5 text-sm md:col-span-2" />
                   <input value={settings.defaultSeo.keywords.join(", ")} onChange={(e) => update("defaultSeo.keywords", e.target.value.split(",").map((item) => item.trim()).filter(Boolean))} placeholder="SEO keywords" className="rounded-lg border border-gray-200 px-3 py-2.5 text-sm md:col-span-2" />
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          {activeTab === "sale" ? (
+            <div className="space-y-5">
+              <div className="rounded-xl border border-gray-200 bg-white p-6">
+                <h2 className="mb-1 text-base font-bold text-gray-900">Sale Countdown Timer</h2>
+                <p className="mb-5 text-sm text-gray-500">Set when the sale ends. The timer shows in the announcement bar and cart sidebar.</p>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <label>
+                    <span className="mb-1.5 block text-sm font-medium text-gray-700">Sale End Date &amp; Time</span>
+                    <input
+                      type="datetime-local"
+                      value={settings.saleEndsAt?.slice(0, 16) ?? ""}
+                      onChange={(e) => update("saleEndsAt", e.target.value)}
+                      className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+                    />
+                    <p className="mt-1 text-xs text-gray-400">Leave blank or set a past date to hide the timer.</p>
+                  </label>
+                  <label>
+                    <span className="mb-1.5 block text-sm font-medium text-gray-700">Timer Label</span>
+                    <input
+                      value={settings.saleLabel}
+                      onChange={(e) => update("saleLabel", e.target.value)}
+                      placeholder="e.g. Sale Ends In"
+                      className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-primary focus:outline-none"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-gray-200 bg-white p-6">
+                <h2 className="mb-1 text-base font-bold text-gray-900">Announcement Bar Messages</h2>
+                <p className="mb-4 text-sm text-gray-500">These rotate every 4 seconds in the top announcement bar.</p>
+                <div className="space-y-2">
+                  {(settings.announcementMessages ?? []).map((msg, i) => (
+                    <div key={i} className="flex gap-2">
+                      <input
+                        value={msg}
+                        onChange={(e) => {
+                          const next = [...(settings.announcementMessages ?? [])];
+                          next[i] = e.target.value;
+                          update("announcementMessages", next);
+                        }}
+                        className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-primary focus:outline-none"
+                        placeholder={`Message ${i + 1}`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => update("announcementMessages", (settings.announcementMessages ?? []).filter((_, j) => j !== i))}
+                        className="rounded-lg border border-red-200 px-2.5 text-red-500 hover:bg-red-50"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => update("announcementMessages", [...(settings.announcementMessages ?? []), ""])}
+                    className="flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+                  >
+                    <Plus size={15} /> Add message
+                  </button>
                 </div>
               </div>
             </div>
