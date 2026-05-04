@@ -70,7 +70,7 @@ export default async function AccountPage() {
           </div>
         </div>
 
-        <AuthPanel />
+        {!user && <AuthPanel />}
       </div>
     </section>
   );
