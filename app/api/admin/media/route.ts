@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Media } from "@/models/Media";
+import { getCurrentUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
-import { getCurrentUser } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   try {
@@ -32,12 +30,9 @@ export async function GET(req: NextRequest) {
       .limit(limit)
       .lean();
 
-    return NextResponse.json({
-      items,
-      pagination: { page, limit, total, pages: Math.ceil(total / limit) }
-    });
-  } catch (err) {
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    return NextResponse.json({ items, pagination: { page, limit, total, pages: Math.ceil(total / limit) } });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message ?? "Server error" }, { status: 500 });
   }
 }
 
@@ -54,43 +49,66 @@ export async function POST(req: NextRequest) {
     if (contentType.includes("multipart/form-data")) {
       const formData = await req.formData();
       const file = formData.get("file");
+
       if (!(file instanceof File)) {
         return NextResponse.json({ error: "File is required" }, { status: 400 });
       }
 
-      const allowed = ["image/", "video/", "application/pdf"];
+      const allowed = ["image/", "video/"];
       if (!allowed.some((prefix) => file.type.startsWith(prefix))) {
-        return NextResponse.json({ error: "Unsupported file type" }, { status: 400 });
+        return NextResponse.json({ error: "Only images and videos are supported" }, { status: 400 });
       }
-      if (file.size > 25 * 1024 * 1024) {
-        return NextResponse.json({ error: "File must be under 25MB" }, { status: 400 });
+      if (file.size > 50 * 1024 * 1024) {
+        return NextResponse.json({ error: "File must be under 50MB" }, { status: 400 });
       }
 
-      const bytes = Buffer.from(await file.arrayBuffer());
-      const uploadDir = path.join(process.cwd(), "public", "uploads", "media");
-      await mkdir(uploadDir, { recursive: true });
-      const safeName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`;
-      await writeFile(path.join(uploadDir, safeName), bytes);
-      const type = file.type.startsWith("image/") ? "image" : file.type.startsWith("video/") ? "video" : "document";
+      const fileType = file.type.startsWith("image/") ? "image" : "video";
+      const folder = String(formData.get("folder") ?? "products");
+      const safeName = `${folder}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "-")}`;
+
+      let url: string;
+
+      // Use Vercel Blob if token is configured, otherwise return error
+      const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
+      if (blobToken) {
+        const { put } = await import("@vercel/blob");
+        const blob = await put(safeName, file, { access: "public", token: blobToken });
+        url = blob.url;
+      } else {
+        // Fallback: return error instructing to set up Vercel Blob
+        return NextResponse.json({
+          error: "File upload requires BLOB_READ_WRITE_TOKEN. Add a URL manually or set up Vercel Blob in your project settings."
+        }, { status: 503 });
+      }
+
       const media = await Media.create({
         filename: safeName,
         originalName: file.name,
-        url: `/uploads/media/${safeName}`,
-        type,
+        url,
+        type: fileType,
         mimeType: file.type,
         size: file.size,
         alt: String(formData.get("alt") ?? ""),
-        folder: String(formData.get("folder") ?? "general"),
+        folder,
         uploadedBy: user.id
       });
-      return NextResponse.json({ media }, { status: 201 });
+
+      return NextResponse.json({ media, url }, { status: 201 });
     }
 
+    // JSON body — save a URL-based media record
     const body = await req.json();
-    const media = await Media.create({ ...body, uploadedBy: user.id });
-    return NextResponse.json({ media }, { status: 201 });
-  } catch (err) {
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    if (!body.url) return NextResponse.json({ error: "URL is required" }, { status: 400 });
+
+    const media = await Media.create({
+      ...body,
+      type: body.type ?? "image",
+      uploadedBy: user.id
+    });
+    return NextResponse.json({ media, url: body.url }, { status: 201 });
+  } catch (err: any) {
+    console.error("[POST media]", err);
+    return NextResponse.json({ error: err.message ?? "Server error" }, { status: 500 });
   }
 }
 
@@ -103,9 +121,21 @@ export async function DELETE(req: NextRequest) {
 
     await connectToDatabase();
     const { ids } = await req.json();
+
+    // Also delete from Vercel Blob if configured
+    const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
+    if (blobToken && ids?.length) {
+      try {
+        const { del } = await import("@vercel/blob");
+        const items = await Media.find({ _id: { $in: ids } }).select("url").lean();
+        const blobUrls = items.map((m) => m.url).filter((u) => u.includes("vercel-storage.com") || u.includes("blob.vercel-storage"));
+        if (blobUrls.length) await del(blobUrls, { token: blobToken });
+      } catch { /* blob delete errors are non-fatal */ }
+    }
+
     await Media.deleteMany({ _id: { $in: ids } });
     return NextResponse.json({ message: "Deleted" });
-  } catch (err) {
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message ?? "Server error" }, { status: 500 });
   }
 }

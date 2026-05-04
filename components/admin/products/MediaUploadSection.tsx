@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Upload, X, Video, Image as ImageIcon, Film, Move, Link as LinkIcon } from "lucide-react";
+import { Upload, X, Video, Image as ImageIcon, Film, Move, Link as LinkIcon, Loader2, CheckCircle } from "lucide-react";
 import Image from "next/image";
 
 type MediaItem = {
@@ -23,6 +23,38 @@ export default function MediaUploadSection({ media, onChange }: Props) {
   const [dragOver, setDragOver] = useState(false);
   const [dragging, setDragging] = useState<number | null>(null);
   const [dragTarget, setDragTarget] = useState<number | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadMsg, setUploadMsg] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleFileUpload(files: FileList | null) {
+    if (!files?.length) return;
+    setUploading(true);
+    setUploadMsg("");
+    const results: MediaItem[] = [];
+    for (const file of Array.from(files)) {
+      try {
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("folder", "products");
+        const res = await fetch("/api/admin/media", { method: "POST", body: fd });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error ?? "Upload failed");
+        results.push({
+          url: data.url,
+          type: file.type.startsWith("video/") ? "video" : "image",
+          alt: file.name.replace(/\.[^.]+$/, "").replace(/-/g, " "),
+          position: media.length + results.length
+        });
+        setUploadMsg(`Uploaded ${results.length} of ${files.length}…`);
+      } catch (e: any) {
+        setUploadMsg(`Error: ${e.message}`);
+      }
+    }
+    if (results.length) onChange([...media, ...results]);
+    setUploading(false);
+    if (results.length === files.length) setUploadMsg("✓ Upload complete");
+  }
 
   const addUrl = () => {
     const url = urlInput.trim();
@@ -222,15 +254,47 @@ export default function MediaUploadSection({ media, onChange }: Props) {
           </p>
         </div>
 
-        {/* Drop zone hint */}
-        <div className="mt-4 rounded-lg border-2 border-dashed border-gray-200 p-6 text-center">
-          <Upload className="mx-auto h-8 w-8 text-gray-300" />
-          <p className="mt-2 text-sm text-gray-500">
-            Coming soon: Direct file upload to cloud storage
-          </p>
-          <p className="text-xs text-gray-400 mt-1">
-            For now, upload to Cloudinary/S3 and paste the URL above
-          </p>
+        {/* File upload drop zone */}
+        <div
+          className={`mt-4 cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-colors ${dragOver ? "border-primary bg-primary/5" : "border-gray-200 hover:border-gray-300"}`}
+          onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFileUpload(e.dataTransfer.files); }}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*,video/*"
+            multiple
+            className="hidden"
+            onChange={(e) => handleFileUpload(e.target.files)}
+          />
+          {uploading ? (
+            <div className="flex flex-col items-center gap-2">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <p className="text-sm text-gray-600">{uploadMsg || "Uploading…"}</p>
+            </div>
+          ) : uploadMsg.startsWith("✓") ? (
+            <div className="flex flex-col items-center gap-2">
+              <CheckCircle className="h-8 w-8 text-green-500" />
+              <p className="text-sm font-medium text-green-700">{uploadMsg}</p>
+            </div>
+          ) : (
+            <>
+              <Upload className={`mx-auto h-8 w-8 ${dragOver ? "text-primary" : "text-gray-300"}`} />
+              <p className="mt-2 text-sm font-medium text-gray-700">
+                {dragOver ? "Drop to upload" : "Upload images or videos"}
+              </p>
+              <p className="mt-1 text-xs text-gray-400">
+                Drag & drop or click · JPG, PNG, WEBP, MP4 · Max 50MB per file
+              </p>
+              <p className="mt-1 text-xs text-blue-500">
+                Requires Vercel Blob (BLOB_READ_WRITE_TOKEN) — or paste a URL above
+              </p>
+              {uploadMsg && <p className="mt-2 text-xs text-red-500">{uploadMsg}</p>}
+            </>
+          )}
         </div>
       </div>
     </div>

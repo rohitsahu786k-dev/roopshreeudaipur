@@ -3,6 +3,8 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { Order } from "@/models/Order";
 import { getCurrentUser } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 type Params = { params: { id: string } };
 
 export async function GET(_req: NextRequest, { params }: Params) {

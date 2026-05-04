@@ -4,6 +4,8 @@ import { getCurrentUser } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { StorefrontPage } from "@/models/StorefrontPage";
 
+export const dynamic = "force-dynamic";
+
 type Params = { params: { id: string } };
 
 export async function PUT(request: NextRequest, { params }: Params) {

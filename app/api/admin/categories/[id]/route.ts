@@ -5,6 +5,8 @@ import { Product } from "@/models/Product";
 import { getCurrentUser } from "@/lib/auth";
 import slugify from "slugify";
 
+export const dynamic = "force-dynamic";
+
 type Params = { params: { id: string } };
 
 export async function PUT(req: NextRequest, { params }: Params) {

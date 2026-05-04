@@ -57,22 +57,40 @@ export async function POST(req: NextRequest) {
     await connectToDatabase();
     const body = await req.json();
 
+    if (!body.name?.trim()) {
+      return NextResponse.json({ error: "Product name is required" }, { status: 400 });
+    }
+    if (!body.category) {
+      return NextResponse.json({ error: "Category is required" }, { status: 400 });
+    }
+    if (!body.basePrice && body.basePrice !== 0) {
+      return NextResponse.json({ error: "Base price is required" }, { status: 400 });
+    }
+
     const slug = slugify(body.name, { lower: true, strict: true });
     const uniqueSlug = await ensureUniqueSlug(slug);
 
     const product = await Product.create({
       ...body,
-      slug: body.slug || uniqueSlug,
+      description: body.description ?? "",
+      shortDescription: body.shortDescription ?? "",
+      slug: body.slug?.trim() || uniqueSlug,
+      basePrice: Number(body.basePrice) || 0,
+      comparePrice: body.comparePrice ? Number(body.comparePrice) : undefined,
+      stock: Number(body.stock) || 0,
       isActive: body.status === "active"
     });
 
     return NextResponse.json({ product }, { status: 201 });
   } catch (err: any) {
-    console.error(err);
+    console.error("[POST product]", err);
     if (err.code === 11000) {
-      return NextResponse.json({ error: "Slug already exists" }, { status: 409 });
+      return NextResponse.json({ error: "Slug already exists — change the URL slug." }, { status: 409 });
     }
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    const message = err.errors
+      ? Object.values(err.errors).map((e: any) => e.message).join(", ")
+      : (err.message ?? "Server error");
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 

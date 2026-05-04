@@ -86,8 +86,8 @@ const productSchema = new mongoose.Schema(
     slug: { type: String, required: true, unique: true, trim: true },
     status: { type: String, enum: ["draft", "active", "archived"], default: "draft" },
 
-    description: { type: String, required: true },
-    shortDescription: { type: String, required: true },
+    description: { type: String, default: "" },
+    shortDescription: { type: String, default: "" },
 
     // Media
     media: [mediaItemSchema],

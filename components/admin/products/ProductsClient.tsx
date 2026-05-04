@@ -13,7 +13,9 @@ import {
   Eye,
   ChevronLeft,
   ChevronRight,
-  Package
+  Package,
+  Database,
+  Loader2
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/Skeleton";
 
@@ -99,22 +101,57 @@ export default function ProductsClient() {
     );
   };
 
+  const [seeding, setSeeding] = useState(false);
+  const [seedMsg, setSeedMsg] = useState("");
+
+  const seedProducts = async () => {
+    if (!confirm("This will add all 20 catalog products to the database. Existing products with the same slug will be skipped. Continue?")) return;
+    setSeeding(true);
+    setSeedMsg("");
+    try {
+      const res = await fetch("/api/admin/seed", { method: "POST" });
+      const data = await res.json();
+      setSeedMsg(data.message ?? "Done");
+      fetchProducts();
+    } catch {
+      setSeedMsg("Seed failed");
+    } finally {
+      setSeeding(false);
+    }
+  };
+
   return (
     <div className="p-4 lg:p-6">
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold text-gray-900">Products</h1>
           <p className="text-sm text-gray-500 mt-0.5">{pagination.total} total products</p>
         </div>
-        <Link
-          href="/admin/products/new"
-          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-dark"
-        >
-          <Plus className="h-4 w-4" />
-          Add Product
-        </Link>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={seedProducts}
+            disabled={seeding}
+            title="Import 20 products from static catalog"
+            className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+          >
+            {seeding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Database className="h-4 w-4" />}
+            {seeding ? "Seeding…" : "Seed 20 Products"}
+          </button>
+          <Link
+            href="/admin/products/new"
+            className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-dark"
+          >
+            <Plus className="h-4 w-4" />
+            Add Product
+          </Link>
+        </div>
       </div>
+      {seedMsg && (
+        <div className="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-2 text-sm text-green-700">
+          {seedMsg}
+        </div>
+      )}
 
       {/* Filters */}
       <div className="mb-4 flex flex-wrap items-center gap-3">
